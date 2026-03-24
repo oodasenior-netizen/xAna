@@ -13,6 +13,8 @@ export default function CreatorLayout({
 
   return (
     <div className="creator-shell">
+      <GoldParticles density="light" />
+
       {/* Mobile Hamburger Button */}
       <button
         className="creator-hamburger"

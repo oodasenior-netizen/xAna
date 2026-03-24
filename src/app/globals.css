@@ -7,21 +7,21 @@
    ═══════════════════════════════════════════════════════════ */
 
 :root {
-  --bg-hacienda: #ffffff;
-  --bg-warm: #f5f7fa;
-  --bg-surface: #eef1f6;
-  --bg-raised: #ffffff;
-  --ink: #0b1a3b;
-  --ink-muted: #5a6a8a;
+  --bg-hacienda: #060c1f;
+  --bg-warm: #091127;
+  --bg-surface: #0d1730;
+  --bg-raised: #111d3a;
+  --ink: #e4ddd0;
+  --ink-muted: #7b869e;
   --accent: #c9a84c;
   --accent-hot: #d4a017;
   --accent-gold: #c9a84c;
-  --accent-glow: rgba(201, 168, 76, 0.20);
+  --accent-glow: rgba(201, 168, 76, 0.22);
   --terracotta: #c9a84c;
   --blossom: #d4af37;
-  --iron: #2a3a5c;
-  --glass: rgba(255, 255, 255, 0.92);
-  --glass-border: rgba(11, 26, 59, 0.10);
+  --iron: #1e2d4f;
+  --glass: rgba(10, 18, 38, 0.82);
+  --glass-border: rgba(201, 168, 76, 0.10);
   --navy: #0b1a3b;
   --navy-light: #1a2d5a;
   --navy-muted: #2a3a5c;
@@ -46,10 +46,11 @@ body {
   color: var(--ink);
   background: var(--bg-hacienda);
   font-family: var(--font-space-grotesk), system-ui, sans-serif;
-  /* subtle background texture */
   background-image:
-    radial-gradient(circle at 20% 80%, rgba(201,168,76,0.03) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(11,26,59,0.02) 0%, transparent 40%);
+    radial-gradient(ellipse at 15% 85%, rgba(201,168,76,0.07) 0%, transparent 50%),
+    radial-gradient(ellipse at 85% 10%, rgba(201,168,76,0.05) 0%, transparent 45%),
+    radial-gradient(ellipse at 50% 50%, rgba(26,45,90,0.25) 0%, transparent 70%),
+    radial-gradient(ellipse at 75% 75%, rgba(201,168,76,0.03) 0%, transparent 40%);
   background-attachment: fixed;
 }
 
@@ -58,7 +59,7 @@ a { color: inherit; text-decoration: none; }
 h1, h2, h3, .brand-font {
   font-family: var(--font-bebas-neue), sans-serif;
   letter-spacing: 0.04em;
-  color: var(--navy);
+  color: var(--ink);
 }
 
 /* ── Utility classes ──────────────────────────────────── */
@@ -75,7 +76,7 @@ h1, h2, h3, .brand-font {
   font-size: clamp(2rem, 5vw, 3.4rem);
   line-height: 1;
   margin: 0.3rem 0 1.2rem;
-  background: linear-gradient(135deg, var(--navy), var(--gold));
+  background: linear-gradient(135deg, var(--gold-light), var(--gold));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -380,7 +381,8 @@ h1, h2, h3, .brand-font {
   text-align: center;
   padding: 3rem 1.5rem;
   background:
-    radial-gradient(ellipse at 50% 30%, rgba(11, 26, 59, 0.06) 0%, transparent 60%),
+    radial-gradient(ellipse at 50% 60%, rgba(201, 168, 76, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 25% 20%, rgba(201, 168, 76, 0.03) 0%, transparent 40%),
     linear-gradient(180deg, var(--bg-hacienda), var(--bg-warm));
 }
 
@@ -432,7 +434,7 @@ h1, h2, h3, .brand-font {
   font-size: clamp(3.4rem, 10vw, 8rem);
   line-height: 0.88;
   margin: 0;
-  background: linear-gradient(135deg, var(--navy), var(--gold));
+  background: linear-gradient(135deg, #ffffff, var(--gold));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -759,7 +761,7 @@ h1, h2, h3, .brand-font {
 .gw-price {
   font-size: 2.6rem;
   margin: 0.3rem 0;
-  background: linear-gradient(90deg, var(--navy), var(--gold));
+  background: linear-gradient(90deg, #f5edd6, var(--gold));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -881,7 +883,7 @@ h1, h2, h3, .brand-font {
 .welcome-content h1 {
   font-size: clamp(2rem, 5vw, 3.6rem);
   margin: 0;
-  background: linear-gradient(135deg, var(--navy), var(--gold));
+  background: linear-gradient(135deg, #ffffff, var(--gold));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -918,7 +920,7 @@ h1, h2, h3, .brand-font {
   display: flex;
   justify-content: space-around;
   padding: 0.6rem 0 0.8rem;
-  background: rgba(255, 255, 255, 0.94);
+  background: rgba(6, 12, 31, 0.96);
   backdrop-filter: blur(16px);
   border-top: 1px solid var(--glass-border);
   box-shadow: 0 -4px 20px rgba(0,0,0,0.03);
@@ -967,7 +969,7 @@ h1, h2, h3, .brand-font {
   justify-content: center;
   gap: 0.6rem;
   padding: 0.45rem 1rem;
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(6, 12, 31, 0.96);
   backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--glass-border);
   font-size: 0.75rem;
@@ -1041,7 +1043,7 @@ h1, h2, h3, .brand-font {
 
 .feed-thumb {
   height: 220px;
-  background: linear-gradient(145deg, var(--navy-muted, #2a3a5c), var(--navy, #0b1a3b));
+  background: linear-gradient(145deg, var(--t1, #1a2d5a), var(--t2, #0b1a3b));
   position: relative;
 }
 
@@ -1802,7 +1804,7 @@ h1, h2, h3, .brand-font {
 .creator-nav-brand {
   font-size: 1.3rem;
   margin: 0;
-  background: linear-gradient(135deg, var(--navy), var(--gold));
+  background: linear-gradient(135deg, #f5edd6, var(--gold));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -4617,4 +4619,494 @@ textarea:focus {
   0%   { transform: translateX(-100%); }
   50%  { transform: translateX(100%); }
   100% { transform: translateX(100%); }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DARK LUXURY OVERHAUL — Text Fixes, Ambient, Missing Pages
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Dark theme: navy text on gold-tinted pills → gold-light ── */
+.gw-stat-pill,
+.gw-proof-pill,
+.tier-chip,
+.mood-tag { color: var(--gold-light); }
+
+/* ── Dark theme: hover states that used navy text → gold ── */
+.creator-nav-item:hover,
+.cr-action-card:hover,
+.cr-tab:hover,
+.cr-ai-pill:hover,
+.vault-filter-btn:hover { color: var(--gold); }
+
+/* ── Dark theme: messenger headings visible ── */
+.messenger-sidebar-header h2,
+.messenger-chat-name,
+.messenger-item.unread .messenger-item-name { color: var(--ink); }
+
+/* ── Sent bubbles brighter against dark bg ── */
+.messenger-bubble.sent p,
+.cr-chat-bubble.user .cr-chat-text {
+  background: var(--navy-light);
+}
+
+/* ── Enriched card depth ── */
+.feed-card,
+.vault-tile,
+.replay-card,
+.scroll-envelope,
+.cr-feed-card,
+.cr-vault-card,
+.settings-group {
+  box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+}
+
+.feed-card:hover,
+.vault-tile:hover {
+  box-shadow: 0 8px 40px rgba(0,0,0,0.35), 0 0 30px rgba(201,168,76,0.06);
+}
+
+.scroll-envelope:hover {
+  box-shadow: 0 6px 24px rgba(0,0,0,0.3), 0 0 10px rgba(201,168,76,0.04);
+}
+
+/* ── Stat cards with gradient depth ── */
+.cr-stat-card {
+  background: linear-gradient(145deg, var(--bg-raised), var(--bg-surface));
+  border-color: rgba(201,168,76,0.06);
+}
+
+.cr-stat-card:hover {
+  border-color: rgba(201,168,76,0.15);
+  box-shadow: 0 4px 20px rgba(201,168,76,0.06);
+}
+
+.cr-stat-card.accent {
+  background: linear-gradient(145deg, rgba(201,168,76,0.12), rgba(201,168,76,0.04));
+  border-color: var(--gold);
+}
+
+/* ── Gateway photo glow ── */
+.gw-creator-photo {
+  box-shadow: 0 16px 60px rgba(0,0,0,0.5), 0 0 80px rgba(201,168,76,0.08);
+}
+
+/* ── Collage card depth ── */
+.gw-collage-card {
+  box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+}
+
+.gw-collage-card:hover {
+  box-shadow: 0 8px 40px rgba(0,0,0,0.35), 0 0 20px rgba(201,168,76,0.08);
+}
+
+/* ── Price card glow ── */
+.gw-price-highlight {
+  box-shadow: 0 0 80px rgba(201,168,76,0.15), 0 0 0 1px rgba(201,168,76,0.2);
+}
+
+.gw-price-card:hover {
+  box-shadow: 0 12px 50px rgba(0,0,0,0.4), 0 0 30px rgba(201,168,76,0.08);
+}
+
+/* ── Enter button glow ── */
+.gw-enter-btn {
+  box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+}
+
+.gw-enter-btn:hover {
+  box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 0 20px rgba(201,168,76,0.1);
+}
+
+/* ── Proof section atmospheric ── */
+.gw-proof {
+  background: linear-gradient(180deg, rgba(201,168,76,0.03), transparent);
+  border-color: rgba(201,168,76,0.08);
+}
+
+.gw-proof-pill {
+  box-shadow: 0 0 20px rgba(201,168,76,0.12);
+}
+
+/* ── Highlight panel glow ── */
+.gw-hl-panel {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.gw-hl-panel:hover {
+  box-shadow: 0 8px 40px rgba(0,0,0,0.4), 0 0 20px rgba(201,168,76,0.06);
+}
+
+/* ── Creator nav enrichment ── */
+.creator-nav {
+  background: linear-gradient(180deg, var(--bg-raised), var(--bg-surface));
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+
+.creator-main {
+  background: linear-gradient(180deg, rgba(17,29,58,0.6), rgba(13,23,48,0.4));
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+/* ── Creator quick actions ── */
+.cr-action-card {
+  background: linear-gradient(145deg, var(--bg-raised), var(--bg-surface));
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.cr-action-card:hover {
+  box-shadow: 0 8px 24px rgba(0,0,0,0.25), 0 0 12px rgba(201,168,76,0.06);
+}
+
+/* ── Creator feed card glow ── */
+.cr-feed-card:hover {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3), 0 0 10px rgba(201,168,76,0.04);
+}
+
+/* ── Creator chat/balance ── */
+.cr-chat-window {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+
+.cr-balance-card.main {
+  box-shadow: 0 0 40px rgba(201,168,76,0.08);
+}
+
+/* ── Creator vault hover ── */
+.cr-vault-card:hover {
+  box-shadow: 0 8px 30px rgba(0,0,0,0.3), 0 0 12px rgba(201,168,76,0.04);
+}
+
+/* ── Settings card depth ── */
+.settings-profile-card {
+  background: linear-gradient(135deg, rgba(201,168,76,0.06), rgba(11,26,59,0.2));
+}
+
+/* ── Upload zone dark ── */
+.cr-upload-zone {
+  border-color: rgba(201,168,76,0.3);
+  background: rgba(201,168,76,0.03);
+}
+
+/* ── Messenger shell depth ── */
+.messenger-shell {
+  box-shadow: 0 4px 30px rgba(0,0,0,0.3);
+}
+
+/* ── Offering tier button dark ── */
+.offering-tier-btn {
+  box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+}
+
+.offering-tier-btn:hover {
+  box-shadow: 0 8px 30px rgba(0,0,0,0.25), 0 0 15px rgba(201,168,76,0.06);
+  border-color: var(--gold);
+}
+
+/* ── Offering form fix — grid pass-through ── */
+.offering-tiers > form { display: contents; }
+
+/* ═══════════════════════════════════════════════════════════
+   MI RINCÓN (Altar) — Missing Styles
+   ═══════════════════════════════════════════════════════════ */
+
+.altar-profile {
+  text-align: center;
+  padding: 2rem 1.5rem;
+  border-radius: var(--radius);
+  background: linear-gradient(145deg, var(--bg-raised), var(--bg-surface));
+  border: 1px solid var(--glass-border);
+  margin-bottom: 1.2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.altar-profile::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  opacity: 0.4;
+}
+
+.altar-avatar {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 0.8rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold-glow), rgba(201,168,76,0.08));
+  border: 2px solid var(--gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  box-shadow: 0 0 30px rgba(201,168,76,0.12);
+}
+
+.altar-name {
+  margin: 0 0 0.3rem;
+  font-size: 1.6rem;
+}
+
+.altar-tier {
+  display: inline-block;
+  background: var(--gold-glow);
+  color: var(--gold-light);
+  padding: 0.25rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  border: 1px solid rgba(201,168,76,0.2);
+  margin-bottom: 0.4rem;
+}
+
+.altar-since {
+  color: var(--ink-muted);
+  font-size: 0.82rem;
+  margin: 0;
+}
+
+.altar-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.7rem;
+  margin-bottom: 1.4rem;
+}
+
+.altar-stat-card {
+  text-align: center;
+  padding: 1rem 0.6rem;
+  border-radius: var(--radius-sm);
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  transition: border-color 200ms ease, box-shadow 200ms ease;
+}
+
+.altar-stat-card:hover {
+  border-color: rgba(201,168,76,0.15);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+}
+
+.altar-stat-value {
+  display: block;
+  font-family: var(--font-bebas-neue), sans-serif;
+  font-size: 1.8rem;
+  color: var(--gold);
+  line-height: 1;
+}
+
+.altar-stat-label {
+  display: block;
+  font-size: 0.68rem;
+  color: var(--ink-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-top: 0.3rem;
+}
+
+.altar-collection,
+.altar-leaderboard {
+  border-radius: var(--radius);
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  padding: 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.altar-collection h2,
+.altar-leaderboard h2 {
+  margin: 0 0 0.8rem;
+  font-size: 1.2rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.altar-rank-list {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.altar-rank-row {
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: var(--radius-sm);
+  background: var(--bg-raised);
+  border: 1px solid transparent;
+  transition: border-color 150ms ease, background 150ms ease;
+}
+
+.altar-rank-row:hover {
+  border-color: rgba(201,168,76,0.1);
+}
+
+.altar-rank-row.you {
+  border-color: var(--gold);
+  background: rgba(201,168,76,0.06);
+}
+
+.altar-rank {
+  font-family: var(--font-bebas-neue), sans-serif;
+  font-size: 1.2rem;
+  color: var(--gold);
+  text-align: center;
+}
+
+.altar-rank-name {
+  font-weight: 600;
+  font-size: 0.88rem;
+}
+
+.altar-rank-pts {
+  font-size: 0.82rem;
+  color: var(--ink-muted);
+}
+
+.altar-owned-list {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 0.3rem;
+}
+
+.altar-owned-item {
+  padding: 0.5rem 0.7rem;
+  border-radius: var(--radius-sm);
+  background: var(--bg-raised);
+  font-size: 0.85rem;
+  border: 1px solid var(--glass-border);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   THE OFFERING — Missing Styles
+   ═══════════════════════════════════════════════════════════ */
+
+.offering-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 1.6rem 1rem;
+  border-radius: var(--radius);
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  color: var(--ink);
+  cursor: pointer;
+  transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.offering-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+
+.offering-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--gold);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3), 0 0 20px rgba(201,168,76,0.08);
+}
+
+.offering-card:hover::before { opacity: 1; }
+
+.offering-emoji { font-size: 2.4rem; }
+.offering-name { font-size: 0.88rem; font-weight: 700; }
+.offering-price {
+  font-size: 1.4rem;
+  color: var(--gold);
+  font-weight: 700;
+  font-family: var(--font-bebas-neue), sans-serif;
+}
+
+.offering-points {
+  text-align: center;
+  padding: 1rem 1.2rem;
+  border-radius: var(--radius);
+  background: linear-gradient(135deg, rgba(201,168,76,0.06), rgba(201,168,76,0.02));
+  border: 1px solid rgba(201,168,76,0.12);
+  margin: 1.5rem 0;
+}
+
+.offering-points p { margin: 0; font-size: 0.92rem; }
+.offering-points strong {
+  color: var(--gold);
+  font-family: var(--font-bebas-neue), sans-serif;
+  font-size: 1.6rem;
+}
+
+.offering-req-list {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 0.8rem;
+}
+
+.offering-req-item {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.7rem 0.8rem;
+  border-radius: var(--radius-sm);
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  transition: border-color 150ms ease;
+}
+
+.offering-req-item:hover { border-color: rgba(201,168,76,0.15); }
+
+.offering-req-votes {
+  font-family: var(--font-bebas-neue), sans-serif;
+  font-size: 1.1rem;
+  color: var(--gold);
+  text-align: center;
+}
+
+.offering-req-text {
+  font-size: 0.88rem;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LA TERRAZA — Enhanced Stage
+   ═══════════════════════════════════════════════════════════ */
+
+.sanctuary-stage {
+  margin: 1rem 0;
+}
+
+.sanctuary-screen {
+  min-height: 280px;
+  position: relative;
+  overflow: hidden;
+}
+
+.sanctuary-screen::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(201,168,76,0.03), transparent 70%);
+  pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DARK LUXURY — Responsive Fixes
+   ═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 900px) {
+  .altar-stats-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 600px) {
+  .altar-stats-grid { grid-template-columns: repeat(3, 1fr); }
 }
