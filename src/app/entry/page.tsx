@@ -15,16 +15,20 @@ export default async function EntryPage({ searchParams }: EntryPageProps) {
       <section className="gw-hero">
         <div className="gw-hero-overlay" />
         <div className="gw-hero-content">
-          {/* Creator photo */}
+          {/* Full-body creator portrait */}
           <div className="gw-creator-photo">
-            <Image
-              src="/pro9.jpg"
-              alt={creatorProfile.name}
-              width={160}
-              height={160}
-              className="gw-creator-img"
-              priority
-            />
+            <div className="gw-photo-glow" />
+            <div className="gw-photo-frame">
+              <Image
+                src="/pro9.jpg"
+                alt={creatorProfile.name}
+                width={480}
+                height={640}
+                className="gw-creator-img"
+                priority
+              />
+            </div>
+            <div className="gw-photo-outline" />
           </div>
 
           <h1 className="gw-name">{creatorProfile.name}</h1>
