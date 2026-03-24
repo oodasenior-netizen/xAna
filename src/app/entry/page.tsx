@@ -1,5 +1,6 @@
 import { creatorProfile, pricingPlans } from "@/lib/content";
 import { creatorLogin, subscribeAndEnter } from "@/app/actions";
+import Image from "next/image";
 
 type EntryPageProps = {
   searchParams: Promise<{ error?: string }>;
@@ -16,7 +17,14 @@ export default async function EntryPage({ searchParams }: EntryPageProps) {
         <div className="gw-hero-content">
           {/* Creator photo */}
           <div className="gw-creator-photo">
-            <span aria-label="Creator portrait">👩‍🎤</span>
+            <Image
+              src="/pro9.jpg"
+              alt={creatorProfile.name}
+              width={160}
+              height={160}
+              className="gw-creator-img"
+              priority
+            />
           </div>
 
           <h1 className="gw-name">{creatorProfile.name}</h1>

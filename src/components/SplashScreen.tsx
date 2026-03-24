@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export default function SplashScreen() {
   const router = useRouter();
@@ -22,12 +23,21 @@ export default function SplashScreen() {
       <div className="splash-aura splash-aura-three" />
 
       <div className="splash-stage">
-        {/* Logo ring with icon */}
+        {/* Logo with bounce + pulse animation */}
         <div className="splash-logo-ring">
-          <div className="splash-logo-core">🏡</div>
+          <div className="splash-logo-core">
+            <Image
+              src="/logo9.jpg"
+              alt="xAna Logo"
+              width={120}
+              height={120}
+              className="splash-logo-img"
+              priority
+            />
+          </div>
         </div>
 
-        <h1 className="splash-name">Ari Voss</h1>
+        <h1 className="splash-name">Goddess Annaleese</h1>
         <p className="splash-tag">enter the hacienda</p>
 
         {/* Gate bars that part open */}

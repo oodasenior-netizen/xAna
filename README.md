@@ -1,4 +1,4 @@
-# Ari Voss Creator Platform
+# Goddess Annaleese Creator Platform
 
 Official single-creator content platform built with Next.js App Router.
 

@@ -34,7 +34,7 @@ export type ScrollThread = {
 /* ── Creator identity ─────────────────────────────────── */
 
 export const creatorProfile = {
-  name: "Ari Voss",
+  name: "Goddess Annaleese",
   tagline: "Welcome to the estate. Stay as long as you like.",
   memberCount: "4,200",
   bio: "Warm nights, golden light, and stories told only behind closed doors. Exclusive visuals, intimate moments, and premium drops from inside the hacienda.",

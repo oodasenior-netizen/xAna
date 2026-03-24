@@ -14,7 +14,7 @@ const bebasNeue = Bebas_Neue({
 });
 
 export const metadata: Metadata = {
-  title: "Ari Voss Official Creator App",
+  title: "Goddess Annaleese Official Creator App",
   description: "Subscriber platform with PPV, one-time purchases, and secure creator controls.",
 };
 
