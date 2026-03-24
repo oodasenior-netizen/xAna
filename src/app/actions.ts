@@ -2,6 +2,7 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import {
   AUTH_COOKIE_NAME,
   type AppSession,
@@ -9,6 +10,8 @@ import {
   signSessionToken,
 } from "@/lib/auth";
 import { feedItems, vaultItems } from "@/lib/content";
+import { readStore, writeStore } from "@/lib/store";
+import type { MoodTag, AccessMode, MediaStatus, MediaType } from "@/lib/store";
 
 const THIRTY_DAYS = 60 * 60 * 24 * 30;
 
@@ -131,4 +134,151 @@ export async function sendTip(formData: FormData) {
   });
 
   redirect("/app/offering?sent=1");
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CREATOR PUBLISHING ACTIONS
+   ═══════════════════════════════════════════════════════════ */
+
+export async function creatorPublishPost(formData: FormData) {
+  const session = await getSessionFromCookies();
+  if (!session || session.role !== "creator") redirect("/entry");
+
+  const title = String(formData.get("title") ?? "").trim();
+  const description = String(formData.get("description") ?? "").trim();
+  const mood = String(formData.get("mood") ?? "Personal") as MoodTag;
+  const access = String(formData.get("access") ?? "subscription") as AccessMode;
+  const videoUrl = String(formData.get("videoUrl") ?? "").trim() || undefined;
+  const mediaType = String(formData.get("mediaType") ?? "text") as MediaType;
+  const priceCents =
+    access !== "subscription" && formData.get("priceCents")
+      ? Math.round(Number(formData.get("priceCents")) * 100)
+      : undefined;
+
+  if (!title || !description) redirect("/creator/feed?error=empty");
+
+  const store = readStore();
+  store.feedPosts.unshift({
+    id: `feed-${Date.now()}`,
+    title,
+    description,
+    mood,
+    access,
+    priceCents,
+    thumb: ["#8b5e3c", "#241710"],
+    likes: 0,
+    comments: 0,
+    postedAt: "Just now",
+    pinned: false,
+    videoUrl,
+    type: mediaType,
+  });
+  writeStore(store);
+  revalidatePath("/app");
+  revalidatePath("/creator/feed");
+  redirect("/creator/feed?published=1");
+}
+
+export async function creatorDeletePost(formData: FormData) {
+  const session = await getSessionFromCookies();
+  if (!session || session.role !== "creator") redirect("/entry");
+
+  const postId = String(formData.get("postId") ?? "");
+  const store = readStore();
+  store.feedPosts = store.feedPosts.filter((p) => p.id !== postId);
+  writeStore(store);
+  revalidatePath("/app");
+  revalidatePath("/creator/feed");
+  redirect("/creator/feed");
+}
+
+export async function creatorPublishVaultItem(formData: FormData) {
+  const session = await getSessionFromCookies();
+  if (!session || session.role !== "creator") redirect("/entry");
+
+  const title = String(formData.get("title") ?? "").trim();
+  const description = String(formData.get("description") ?? "").trim();
+  const mood = String(formData.get("mood") ?? "PPV") as MoodTag;
+  const access = String(formData.get("access") ?? "ppv") as AccessMode;
+  const priceDollars = Number(formData.get("price") ?? 0);
+  const priceCents = Math.round(priceDollars * 100) || undefined;
+  const videoUrl = String(formData.get("videoUrl") ?? "").trim() || undefined;
+  const mediaType = String(formData.get("mediaType") ?? "video") as MediaType;
+  const status = String(formData.get("status") ?? "listed") as MediaStatus;
+  const scheduledFor = String(formData.get("scheduledFor") ?? "").trim() || undefined;
+
+  if (!title) redirect("/creator/vault?error=empty");
+
+  const store = readStore();
+  store.vaultItems.unshift({
+    id: `vault-${Date.now()}`,
+    title,
+    description,
+    mood,
+    access,
+    priceCents,
+    thumb: ["#5c2e1a", "#1a0f0a"],
+    likes: 0,
+    comments: 0,
+    videoUrl,
+    type: mediaType,
+    status,
+    scheduledFor,
+    views: 0,
+    purchases: 0,
+    uploadedAt: new Date().toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    }),
+  });
+  writeStore(store);
+  revalidatePath("/app/vault");
+  revalidatePath("/creator/vault");
+  redirect("/creator/vault?published=1");
+}
+
+export async function creatorUpdateVaultItem(formData: FormData) {
+  const session = await getSessionFromCookies();
+  if (!session || session.role !== "creator") redirect("/entry");
+
+  const id = String(formData.get("id") ?? "");
+  const title = String(formData.get("title") ?? "").trim();
+  const description = String(formData.get("description") ?? "").trim();
+  const priceDollars = Number(formData.get("price") ?? 0);
+  const status = String(formData.get("status") ?? "listed") as MediaStatus;
+  const scheduledFor = String(formData.get("scheduledFor") ?? "").trim() || undefined;
+  const videoUrl = String(formData.get("videoUrl") ?? "").trim() || undefined;
+
+  const store = readStore();
+  store.vaultItems = store.vaultItems.map((item) =>
+    item.id === id
+      ? {
+          ...item,
+          title: title || item.title,
+          description: description !== "" ? description : item.description,
+          priceCents: priceDollars > 0 ? Math.round(priceDollars * 100) : item.priceCents,
+          status,
+          scheduledFor: status === "scheduled" ? scheduledFor : undefined,
+          videoUrl: videoUrl !== undefined ? videoUrl || item.videoUrl : item.videoUrl,
+        }
+      : item
+  );
+  writeStore(store);
+  revalidatePath("/app/vault");
+  revalidatePath("/creator/vault");
+  redirect("/creator/vault?saved=1");
+}
+
+export async function creatorDeleteVaultItem(formData: FormData) {
+  const session = await getSessionFromCookies();
+  if (!session || session.role !== "creator") redirect("/entry");
+
+  const itemId = String(formData.get("itemId") ?? "");
+  const store = readStore();
+  store.vaultItems = store.vaultItems.filter((i) => i.id !== itemId);
+  writeStore(store);
+  revalidatePath("/app/vault");
+  revalidatePath("/creator/vault");
+  redirect("/creator/vault");
 }

@@ -1,20 +1,28 @@
-import { unlockContent } from "@/app/actions";
-import { canAccessContent, feedItems, priceLabel } from "@/lib/content";
+﻿import { unlockContent } from "@/app/actions";
+import { priceLabel } from "@/lib/content";
 import { requireSubscriber } from "@/lib/guards";
+import { readStore } from "@/lib/store";
 import { InteractionBar } from "@/components/InteractionBar";
+import { Play, Lock } from "lucide-react";
 
 export default async function ElJardinPage() {
   const session = await requireSubscriber();
+  const { feedPosts } = readStore();
 
-  const pinned = feedItems.find((i) => i.pinned);
-  const rest = feedItems.filter((i) => !i.pinned);
+  function canAccess(item: { access: string; id: string }) {
+    if (session.role === "creator") return true;
+    if (item.access === "subscription") return true;
+    return session.ownedContent.includes(item.id);
+  }
+
+  const pinned = feedPosts.find((i) => i.pinned);
+  const rest = feedPosts.filter((i) => !i.pinned);
 
   return (
     <section className="temple-feed">
-      <h1 className="section-title">El Jardín</h1>
+      <h1 className="section-title">El Jardin</h1>
       <p className="eyebrow">The Garden — daily blooms from the estate</p>
 
-      {/* ── Pinned post ───────────────────────────────────── */}
       {pinned && (
         <article
           className="feed-card pinned"
@@ -22,17 +30,24 @@ export default async function ElJardinPage() {
         >
           <div className="feed-thumb" />
           <span className="mood-tag">{pinned.mood}</span>
-          <span className="pinned-badge">📌 Pinned</span>
+          <span className="pinned-badge">Pinned</span>
           <h2>{pinned.title}</h2>
           <p>{pinned.description}</p>
           {pinned.postedAt && <span className="timestamp">{pinned.postedAt}</span>}
+          {pinned.videoUrl && (
+            <a
+              href={"/app/watch?url=" + encodeURIComponent(pinned.videoUrl) + "&title=" + encodeURIComponent(pinned.title)}
+              className="feed-play-link"
+            >
+              <Play size={14} /> Watch
+            </a>
+          )}
           <InteractionBar likes={pinned.likes} comments={pinned.comments} itemId={pinned.id} />
         </article>
       )}
 
-      {/* ── Feed stream ───────────────────────────────────── */}
       {rest.map((item) => {
-        const unlocked = canAccessContent(session, item);
+        const unlocked = canAccess(item);
         return (
           <article
             key={item.id}
@@ -41,7 +56,9 @@ export default async function ElJardinPage() {
           >
             <div className={`feed-thumb ${!unlocked && item.access !== "subscription" ? "locked-thumb" : ""}`}>
               {!unlocked && item.access !== "subscription" && (
-                <span className="thumb-lock">🔒 {priceLabel(item.priceCents)}</span>
+                <span className="thumb-lock">
+                  <Lock size={14} /> {priceLabel(item.priceCents)}
+                </span>
               )}
             </div>
             <span className="mood-tag">{item.mood}</span>
@@ -53,10 +70,22 @@ export default async function ElJardinPage() {
               <form action={unlockContent} style={{ margin: "0 0.8rem 0" }}>
                 <input type="hidden" name="contentId" value={item.id} />
                 <input type="hidden" name="nextPath" value="/app" />
-                <button type="submit" className="primary-btn small-btn">Unlock · {priceLabel(item.priceCents)}</button>
+                <button type="submit" className="primary-btn small-btn">
+                  Unlock - {priceLabel(item.priceCents)}
+                </button>
               </form>
             ) : (
-              <div className="unlocked-chip" style={{ margin: "0 0.8rem" }}>✓ Access confirmed</div>
+              <div style={{ margin: "0 0.8rem", display: "flex", gap: "0.5rem", alignItems: "center" }}>
+                <div className="unlocked-chip">Access confirmed</div>
+                {unlocked && item.videoUrl && (
+                  <a
+                    href={"/app/watch?url=" + encodeURIComponent(item.videoUrl) + "&title=" + encodeURIComponent(item.title) + "&type=" + (item.type ?? "video")}
+                    className="feed-play-link"
+                  >
+                    <Play size={13} /> Watch
+                  </a>
+                )}
+              </div>
             )}
 
             <InteractionBar likes={item.likes} comments={item.comments} itemId={item.id} />

@@ -45,12 +45,11 @@ export const creatorProfile = {
     "Sealed letters and voice notes just for you",
   ],
   collageQuotes: [
-    { text: "\"Every photo is a confession.\"", label: "Philosophy" },
-    { text: "\"I built this place so you could see what I don't show anyone else.\"", label: "Bio" },
-    { text: "\"Golden hour is a state of mind.\"", label: "Saying" },
-    { text: "Born somewhere warm. Lives in the light.", label: "About" },
-    { text: "\"The best things happen after sunset.\"", label: "Mood" },
-    { text: "🌺 Orange blossoms & terracotta dreams", label: "Aesthetic" },
+    { text: "\"Every photo is a filthy confession of how badly I want you to look… and touch.\"", label: "Philosophy" },
+    { text: "\"I built this place so you could see every inch of me I don’t show anyone else… and beg for more.\"", label: "Bio" },
+    { text: "\"Golden hour is a state of mind… when my skin glows and my thighs get wet.\"", label: "Saying" },
+    { text: "Born somewhere warm. Lives in the light, always dripping and ready to be devoured.", label: "About" },
+    { text: "\"The best things happen after sunset… when the clothes come off and I get on my knees.\"", label: "Mood" },
   ],
 };
 
