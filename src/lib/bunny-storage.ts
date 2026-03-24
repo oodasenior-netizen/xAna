@@ -69,9 +69,14 @@ export async function signStorageUrl(
   const raw = TOKEN_KEY + urlPath + expires.toString();
   const encoded = new TextEncoder().encode(raw);
   const hashBuffer = await crypto.subtle.digest("SHA-256", encoded);
-  const token = Array.from(new Uint8Array(hashBuffer))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
+
+  // Bunny CDN expects base64url-encoded token (not hex)
+  const bytes = new Uint8Array(hashBuffer);
+  const base64 = btoa(String.fromCharCode(...bytes));
+  const token = base64
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
 
   return `https://${CDN_HOST}${urlPath}?token=${token}&expires=${expires}`;
 }

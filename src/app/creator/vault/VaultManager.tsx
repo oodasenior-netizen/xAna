@@ -21,13 +21,6 @@ import {
 type FilterTab = "all" | MediaStatus;
 type UploadPhase = "idle" | "uploading" | "done" | "error";
 
-type PreviewState = {
-  url: string;
-  title: string;
-  type: "video" | "audio";
-  mediaType?: string;
-} | null;
-
 type WizardState = {
   id: string;
   title: string;
@@ -219,8 +212,28 @@ export default function VaultManager({ items, published, saved, error }: Props) 
   const [editProgress, setEditProgress] = useState(0);
   const [editError, setEditError] = useState<string | null>(null);
   const [editStorageKey, setEditStorageKey] = useState("");
-  const [preview, setPreview] = useState<PreviewState>(null);
-  const [previewLoading, setPreviewLoading] = useState<string | null>(null);
+
+  // ── Creator preview player ──
+  const [previewPlayer, setPreviewPlayer] = useState<{ url: string; title: string; type: "video" | "audio" } | null>(null);
+  const [previewLoadingId, setPreviewLoadingId] = useState<string | null>(null);
+
+  async function openCreatorPreview(item: StoredVaultItem) {
+    if (item.storageKey) {
+      setPreviewLoadingId(item.id);
+      try {
+        const res = await fetch(`/api/vault/play?key=${encodeURIComponent(item.storageKey)}`);
+        if (!res.ok) throw new Error("Could not get playback URL");
+        const { url } = (await res.json()) as { url: string };
+        setPreviewPlayer({ url, title: item.title, type: item.type === "audio" ? "audio" : "video" });
+      } catch {
+        alert("Playback unavailable — please try again.");
+      } finally {
+        setPreviewLoadingId(null);
+      }
+    } else if (item.videoUrl) {
+      setPreviewPlayer({ url: item.videoUrl, title: item.title, type: item.type === "audio" ? "audio" : "video" });
+    }
+  }
 
   const filtered = filter === "all" ? items : items.filter((m) => m.status === filter);
   const counts: Record<FilterTab, number> = {
@@ -296,39 +309,12 @@ export default function VaultManager({ items, published, saved, error }: Props) 
     await creatorUpdateVaultItem(fd);
   }
 
-  /** Creator preview — fetches a signed URL for storageKey items, or uses videoUrl directly */
-  async function openPreview(item: StoredVaultItem) {
-    const mediaType = item.type ?? "video";
-    const playerType: "video" | "audio" = mediaType === "audio" ? "audio" : "video";
-
-    if (item.storageKey) {
-      setPreviewLoading(item.id);
-      try {
-        const res = await fetch(`/api/vault/play?key=${encodeURIComponent(item.storageKey)}`);
-        if (!res.ok) throw new Error("Could not get playback URL");
-        const { url } = (await res.json()) as { url: string };
-        setPreview({ url, title: item.title, type: playerType, mediaType });
-      } catch {
-        alert("Preview unavailable — please try again.");
-      } finally {
-        setPreviewLoading(null);
-      }
-    } else if (item.videoUrl) {
-      setPreview({ url: item.videoUrl, title: item.title, type: playerType, mediaType });
-    }
-  }
-
   return (
     <div>
-      {/* Preview player overlay */}
-      {preview && (
-        <PlyrPlayer
-          url={preview.url}
-          title={preview.title}
-          type={preview.type}
-          mediaType={preview.mediaType}
-          onClose={() => setPreview(null)}
-        />
+      {/* Creator preview player */}
+      {previewPlayer && (
+        <PlyrPlayer url={previewPlayer.url} title={previewPlayer.title} type={previewPlayer.type}
+          onClose={() => setPreviewPlayer(null)} />
       )}
 
       {published && <div className="cr-toast cr-toast-success">Item published to vault</div>}
@@ -447,6 +433,16 @@ export default function VaultManager({ items, published, saved, error }: Props) 
             <div className="cr-vault-thumb" style={{ background: `linear-gradient(135deg, ${m.thumb[0]}, ${m.thumb[1]})` }}>
               <span className="cr-vault-type">{typeIcon(m.type)}</span>
               <span className="cr-vault-status-badge">{statusIcon(m.status)}</span>
+              {(m.storageKey || m.videoUrl) && (
+                <button
+                  className="cr-vault-play-overlay"
+                  onClick={() => openCreatorPreview(m)}
+                  disabled={previewLoadingId === m.id}
+                  aria-label={`Preview ${m.title}`}
+                >
+                  {previewLoadingId === m.id ? <Loader2 size={22} className="vault-play-spinner" /> : <Play size={26} />}
+                </button>
+              )}
             </div>
             <div className="cr-vault-info">
               <h3 className="cr-vault-title">{m.title}</h3>
@@ -472,19 +468,13 @@ export default function VaultManager({ items, published, saved, error }: Props) 
                 </a>
               )}
               <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-                {(m.storageKey || (m.videoUrl && (m.type === "video" || m.type === "audio"))) && (
+                {(m.storageKey || m.videoUrl) && (
                   <button
-                    className="cr-vault-preview-btn"
-                    onClick={() => openPreview(m)}
-                    disabled={previewLoading === m.id}
-                    title="Preview media"
+                    className="cr-vault-edit-btn"
+                    onClick={() => openCreatorPreview(m)}
+                    disabled={previewLoadingId === m.id}
                   >
-                    {previewLoading === m.id ? (
-                      <Loader2 size={12} className="cr-spin" />
-                    ) : (
-                      <Play size={12} />
-                    )}
-                    Preview
+                    {previewLoadingId === m.id ? <><Loader2 size={12} className="vault-play-spinner" /> Loading...</> : <><Play size={12} /> Preview</>}
                   </button>
                 )}
                 <button className="cr-vault-edit-btn" onClick={() => openWizard(m)}>Quick Edit</button>
