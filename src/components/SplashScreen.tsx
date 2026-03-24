@@ -29,8 +29,8 @@ export default function SplashScreen() {
             <Image
               src="/logo9.jpg"
               alt="xAna Logo"
-              width={400}
-              height={400}
+              width={280}
+              height={280}
               className="splash-logo-img"
               priority
             />

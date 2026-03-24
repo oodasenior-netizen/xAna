@@ -1,7 +1,7 @@
 import { creatorProfile, pricingPlans } from "@/lib/content";
 import { creatorLogin, subscribeAndEnter } from "@/app/actions";
 import Image from "next/image";
-import { Flower2, Star, Lock, CheckCircle, Users, Sparkles, MessageCircle, Eye, Zap } from "lucide-react";
+import { Star, Lock, CheckCircle, Users, Sparkles, MessageCircle, Eye, Zap } from "lucide-react";
 
 type EntryPageProps = {
   searchParams: Promise<{ error?: string }>;
@@ -111,15 +111,13 @@ export default async function EntryPage({ searchParams }: EntryPageProps) {
         </div>
       </section>
 
-      {/* ── Creator portal (bottom-right lotus button) ───── */}
-      <div className="gw-creator-fab">
-        <details className="gw-fab-details">
-          <summary className="gw-fab-button" title="Creator Portal">
-            <Flower2 size={24} />
-          </summary>
-          <div className="gw-fab-panel">
+      {/* ── Creator portal (hidden text link at bottom) ─── */}
+      <div className="gw-creator-link-wrap">
+        <details className="gw-creator-link-details">
+          <summary className="gw-creator-link-summary">Creator access</summary>
+          <div className="gw-fab-panel gw-creator-inline-panel">
             <h3><Lock size={16} /> Creator Portal</h3>
-            {error && <p className="error-note">Login failed. Try again.</p>}
+            {error && <p className="error-note">Invalid credentials. Please try again.</p>}
             <form action={creatorLogin} className="creator-form">
               <input name="email" type="text" placeholder="Username" required autoComplete="username" />
               <input name="password" type="password" placeholder="Password" required autoComplete="current-password" />

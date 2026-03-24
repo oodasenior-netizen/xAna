@@ -53,8 +53,8 @@ export async function creatorLogin(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const password = String(formData.get("password") ?? "");
 
-  const expectedEmail = (process.env.CREATOR_EMAIL ?? "creator").toLowerCase();
-  const expectedPassword = process.env.CREATOR_PASSWORD ?? "ChangeThisCreatorPassword";
+  const expectedEmail = (process.env.CREATOR_EMAIL ?? "creator").trim().toLowerCase();
+  const expectedPassword = (process.env.CREATOR_PASSWORD ?? "ChangeThisCreatorPassword").trim();
 
   if (email !== expectedEmail || password !== expectedPassword) {
     redirect("/entry?error=bad-creator-login");

@@ -165,12 +165,14 @@ h1, h2, h3, .brand-font {
 
 .splash-shell {
   min-height: 100vh;
+  min-height: 100dvh;
   display: grid;
   place-items: center;
   position: relative;
   overflow: hidden;
   background: var(--navy);
   transition: opacity 1s ease;
+  padding: 2rem 1rem;
 }
 
 .splash-shell.exit { opacity: 0; }
@@ -212,9 +214,14 @@ h1, h2, h3, .brand-font {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 0.8rem;
   z-index: 1;
   opacity: 0;
+  width: 100%;
+  max-width: min(480px, 92vw);
+  padding: 0 1rem;
+  text-align: center;
   transform: scale(0.9) translateY(20px);
   transition: opacity 1s ease 0.2s, transform 1s ease 0.2s;
 }
@@ -232,7 +239,7 @@ h1, h2, h3, .brand-font {
 }
 
 .splash-logo-ring {
-  width: min(70vmin, 480px);
+  width: min(70vmin, 320px);
   aspect-ratio: 1;
   border-radius: 50%;
   border: 3px solid rgba(201, 168, 76, 0.3);
@@ -244,7 +251,7 @@ h1, h2, h3, .brand-font {
 }
 
 .splash-logo-core {
-  width: 400px;
+  width: min(80vmin, 280px);
   aspect-ratio: 1;
   border-radius: 50%;
   display: grid;
@@ -252,7 +259,7 @@ h1, h2, h3, .brand-font {
   background: linear-gradient(135deg, var(--navy-light), var(--navy));
   border: 3px solid var(--gold);
   font-size: 2.4rem;
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4), 0 0 60px var(--gold-glow);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), 0 0 60px var(--gold-glow);
   overflow: hidden;
   animation: logo-bounce 1.4s cubic-bezier(0.22, 1.8, 0.36, 1) 0.3s both,
              logo-pulse 2.5s ease-in-out 1.7s infinite;
@@ -908,6 +915,87 @@ h1, h2, h3, .brand-font {
 .vault-page { padding-top: 0.6rem; }
 .vault-intro { color: var(--ink-muted); margin-bottom: 1rem; font-style: italic; }
 
+/* ── Filter tabs ──────────────────────────────────────── */
+.vault-filter-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.vault-filter-btn {
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  border: 1px solid var(--glass-border);
+  background: transparent;
+  color: var(--ink-muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 150ms ease;
+}
+
+.vault-filter-btn:hover { border-color: var(--gold); color: var(--navy); }
+.vault-filter-btn.active {
+  background: var(--navy);
+  color: #fff;
+  border-color: var(--navy);
+}
+
+/* ── Vault mood badge (inline on thumb) ───────────────── */
+.vault-mood-badge {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  color: #fff;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ── Vault pagination ─────────────────────────────────── */
+.vault-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.4rem;
+  padding-bottom: 0.5rem;
+}
+
+.vault-page-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid var(--glass-border);
+  background: var(--bg-raised);
+  color: var(--navy);
+  cursor: pointer;
+  transition: background 150ms ease, border-color 150ms ease;
+}
+
+.vault-page-btn:hover:not(:disabled) {
+  background: var(--navy);
+  color: #fff;
+  border-color: var(--navy);
+}
+
+.vault-page-btn:disabled { opacity: 0.35; cursor: default; }
+
+.vault-page-info {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink-muted);
+  min-width: 50px;
+  text-align: center;
+}
+
 .vault-sort {
   display: flex;
   gap: 0.8rem;
@@ -963,11 +1051,31 @@ h1, h2, h3, .brand-font {
 }
 
 .vault-locked .vault-tile-thumb { filter: blur(10px) brightness(0.4); }
-.vault-lock-icon { font-size: 2rem; filter: none; position: absolute; }
+.vault-lock-icon {
+  filter: none;
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  backdrop-filter: blur(4px);
+}
 .vault-tile-body { padding: 0.8rem; }
 .vault-tile-body h2 { font-size: 1.1rem; margin: 0.3rem 0 0.2rem; }
 .vault-tile-body p { font-size: 0.82rem; color: var(--ink-muted); }
-.vault-price { color: var(--blossom); font-weight: 700; margin: 0.4rem 0; font-size: 0.9rem; }
+.vault-price {
+  color: var(--gold);
+  font-weight: 700;
+  margin: 0.4rem 0;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
 
 /* ═══════════════════════════════════════════════════════════
    LA TERRAZA (The Terrace — Live)
@@ -2868,6 +2976,48 @@ h1, h2, h3, .brand-font {
 @keyframes fabSlideUp {
   from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Creator inline link (hidden at footer) ───────────── */
+
+.gw-creator-link-wrap {
+  padding: 1.5rem 1.4rem 3rem;
+  text-align: center;
+}
+
+.gw-creator-link-details { display: inline-block; }
+
+.gw-creator-link-summary {
+  cursor: pointer;
+  color: var(--ink-muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  list-style: none;
+  opacity: 0.5;
+  transition: opacity 200ms ease;
+}
+
+.gw-creator-link-summary:hover { opacity: 0.9; }
+.gw-creator-link-summary::-webkit-details-marker { display: none; }
+
+.gw-creator-inline-panel {
+  position: static;
+  width: min(300px, 90vw);
+  margin: 0.8rem auto 0;
+  text-align: left;
+  animation: fabSlideUp 250ms ease;
+}
+
+/* Subscriber variant: fits inside shrine-main with fixed header/footer bars */
+.messenger-shell.sub-messenger {
+  height: calc(100vh - 7rem);
+  min-height: 400px;
+}
+
+/* Subscriber avatar (gold gradient for creator) */
+.sub-avatar {
+  background: linear-gradient(135deg, var(--gold), var(--navy)) !important;
 }
 
 /* ═══════════════════════════════════════════════════════════
