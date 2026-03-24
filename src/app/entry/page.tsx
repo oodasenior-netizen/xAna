@@ -61,12 +61,28 @@ export default async function EntryPage({ searchParams }: EntryPageProps) {
         </div>
       </div>
 
-      {/* ── Teaser blurred previews ──────────────────────── */}
-      <section className="gw-teasers">
-        <div className="gw-teaser-card blur-card" />
-        <div className="gw-teaser-card blur-card" />
-        <div className="gw-teaser-card blur-card" />
-        <div className="gw-teaser-card blur-card" />
+      {/* ── Highlight photo panels ────────────────────────── */}
+      <section className="gw-highlights">
+        <div className="gw-highlights-grid">
+          {[
+            { src: "/pro5.jpg", label: "Exclusive Sessions" },
+            { src: "/pro6.jpg", label: "Behind the Veil" },
+            { src: "/pro7.jpg", label: "Intimate Moments" },
+            { src: "/pro8.jpg", label: "Goddess Gallery" },
+          ].map((panel, i) => (
+            <div key={i} className="gw-hl-panel" style={{ animationDelay: `${i * 0.12}s` }}>
+              <Image
+                src={panel.src}
+                alt={panel.label}
+                fill
+                sizes="(max-width: 640px) 50vw, 25vw"
+                className="gw-hl-img"
+              />
+              <div className="gw-hl-overlay" />
+              <span className="gw-hl-label">{panel.label}</span>
+            </div>
+          ))}
+        </div>
       </section>
 
       {/* ── What awaits ──────────────────────────────────── */}

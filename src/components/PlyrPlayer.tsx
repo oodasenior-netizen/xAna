@@ -153,7 +153,6 @@ export function PlyrPlayer({ url, title, type = "video", onClose }: Props) {
                 ref={mediaRef as React.RefObject<HTMLVideoElement>}
                 playsInline
                 className="xp-video"
-                crossOrigin="anonymous"
               >
                 <source src={url} />
               </video>
@@ -161,7 +160,6 @@ export function PlyrPlayer({ url, title, type = "video", onClose }: Props) {
               <audio
                 ref={mediaRef as React.RefObject<HTMLAudioElement>}
                 className="xp-audio"
-                crossOrigin="anonymous"
               >
                 <source src={url} />
               </audio>
