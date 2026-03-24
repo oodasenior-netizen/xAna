@@ -20,7 +20,7 @@ export default async function EntryPage({ searchParams }: EntryPageProps) {
             <div className="gw-photo-glow" />
             <div className="gw-photo-frame">
               <Image
-                src="/goddess.png"
+                src="/annalesse.png"
                 alt={creatorProfile.name}
                 width={480}
                 height={640}
