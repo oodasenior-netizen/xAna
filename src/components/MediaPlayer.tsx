@@ -16,8 +16,7 @@ import {
 type Props = {
   url: string;
   title: string;
-  /** "bunny-embed" renders a secure Bunny Stream iframe — no custom controls needed */
-  type?: "video" | "audio" | "bunny-embed";
+  type?: "video" | "audio";
   posterGradient?: [string, string];
   onClose: () => void;
 };
@@ -37,32 +36,6 @@ export function MediaPlayer({ url, title, type = "video", posterGradient, onClos
   const [currentTime, setCurrentTime] = useState(0);
   const [muted, setMuted] = useState(false);
   const [volume, setVolume] = useState(1);
-
-  // ── Bunny embed mode — render secure iframe, Bunny's own controls handle everything
-  if (type === "bunny-embed") {
-    return (
-      <div className="mpx-overlay" onClick={onClose}>
-        <div className="mpx-modal mpx-modal--iframe" onClick={(e) => e.stopPropagation()}>
-          <div className="mpx-topbar">
-            <span className="mpx-title">{title}</span>
-            <button className="mpx-close" onClick={onClose} aria-label="Close player">
-              <X size={18} />
-            </button>
-          </div>
-          <div className="mpx-iframe-wrap">
-            <iframe
-              src={url}
-              className="mpx-iframe"
-              allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
-              allowFullScreen
-              title={title}
-              loading="eager"
-            />
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   const togglePlay = useCallback(() => {
     const v = videoRef.current;

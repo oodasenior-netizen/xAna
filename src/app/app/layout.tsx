@@ -3,6 +3,7 @@ import { logoutAction } from "@/app/actions";
 import { requireSubscriber } from "@/lib/guards";
 import { tierBadge } from "@/lib/content";
 import { Leaf, Wine, MessageCircle, Moon, User, Settings } from "lucide-react";
+import { GoldParticles } from "@/components/GoldParticles";
 
 export default async function SubscriberLayout({
   children,
@@ -11,6 +12,7 @@ export default async function SubscriberLayout({
 
   return (
     <div className="shrine-shell">
+      <GoldParticles density="light" />
       <main className="shrine-main">{children}</main>
 
       {/* ── 5-tab bottom navigation ──────────────────────── */}

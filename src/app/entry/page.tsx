@@ -2,7 +2,7 @@ import { creatorProfile, pricingPlans } from "@/lib/content";
 import { creatorLogin, subscribeAndEnter } from "@/app/actions";
 import Image from "next/image";
 import { Star, Lock, CheckCircle, Users, Sparkles, MessageCircle, Eye, Zap } from "lucide-react";
-import { ParticleField } from "@/components/ParticleField";
+import { GatewayShell } from "@/components/GatewayShell";
 
 type EntryPageProps = {
   searchParams: Promise<{ error?: string }>;
@@ -12,9 +12,11 @@ export default async function EntryPage({ searchParams }: EntryPageProps) {
   const { error } = await searchParams;
 
   return (
+    <GatewayShell>
     <main className="gateway">
       {/* ── Hero ─────────────────────────────────────────── */}
-      <section className="gw-hero">        <ParticleField count={28} variant="mix" />        <div className="gw-hero-overlay" />
+      <section className="gw-hero">
+        <div className="gw-hero-overlay" />
         <div className="gw-hero-content">
           <div className="gw-creator-photo">
             <Image
@@ -145,5 +147,6 @@ export default async function EntryPage({ searchParams }: EntryPageProps) {
         </details>
       </div>
     </main>
+    </GatewayShell>
   );
 }

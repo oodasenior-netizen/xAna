@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { logoutAction } from "@/app/actions";
 import { LayoutDashboard, BarChart3, DollarSign, Archive, PenLine, MessageCircle, Bot, Shield, Wallet, Radio, User, Lock, Flower2, Menu, X } from "lucide-react";
+import { GoldParticles } from "@/components/GoldParticles";
 
 export default function CreatorLayout({
   children,

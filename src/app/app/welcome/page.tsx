@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ParticleField } from "@/components/ParticleField";
 
 export default function WelcomePage() {
   const router = useRouter();
@@ -21,7 +20,6 @@ export default function WelcomePage() {
 
   return (
     <div className="welcome-overlay">
-      <ParticleField count={20} variant="flowers" />
       <div className={`welcome-content phase-${phase}`}>
         {phase === "gate" && (
           <>
