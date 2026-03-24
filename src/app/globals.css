@@ -362,123 +362,19 @@ h1, h2, h3, .brand-font {
 .gw-hero-content { position: relative; z-index: 1; width: 100%; max-width: 900px; }
 
 .gw-creator-photo {
-  position: relative;
   width: clamp(260px, 50vw, 400px);
   margin: 0 auto 2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Ambient glow behind portrait */
-.gw-photo-glow {
-  position: absolute;
-  inset: -30px;
-  border-radius: 32px;
-  background: radial-gradient(
-    ellipse at 50% 40%,
-    rgba(212, 118, 58, 0.30) 0%,
-    rgba(201, 168, 76, 0.12) 40%,
-    transparent 70%
-  );
-  filter: blur(30px);
-  z-index: 0;
-  animation: photo-glow-breathe 4s ease-in-out infinite;
-}
-
-@keyframes photo-glow-breathe {
-  0%, 100% { opacity: 0.7; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.06); }
-}
-
-/* Inner frame — clips the image with rounded corners + gradient fade at bottom */
-.gw-photo-frame {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  aspect-ratio: 3 / 4;
   border-radius: 24px;
+  border: 3px solid var(--terracotta);
   overflow: hidden;
-  background: linear-gradient(180deg, #3d2a1e, #1a1210);
-  box-shadow:
-    0 30px 80px rgba(0, 0, 0, 0.6),
-    0 8px 30px rgba(0, 0, 0, 0.4),
-    inset 0 0 0 1px rgba(212, 118, 58, 0.15);
-}
-
-.gw-photo-frame::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    180deg,
-    transparent 50%,
-    rgba(26, 18, 16, 0.4) 75%,
-    rgba(26, 18, 16, 0.85) 100%
-  );
-  pointer-events: none;
-  z-index: 2;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
 }
 
 .gw-creator-img {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: top center;
+  height: auto;
   display: block;
-  filter: contrast(1.05) saturate(1.12);
-  transition: transform 0.6s ease, filter 0.6s ease;
-}
-
-.gw-creator-photo:hover .gw-creator-img {
-  transform: scale(1.03);
-  filter: contrast(1.08) saturate(1.2);
-}
-
-/* Decorative outline ring */
-.gw-photo-outline {
-  position: absolute;
-  inset: -6px;
-  border-radius: 28px;
-  border: 2px solid transparent;
-  background:
-    linear-gradient(var(--bg-hacienda), var(--bg-hacienda)) padding-box,
-    linear-gradient(
-      160deg,
-      rgba(212, 118, 58, 0.7) 0%,
-      rgba(201, 168, 76, 0.5) 30%,
-      rgba(212, 118, 58, 0.1) 50%,
-      rgba(201, 168, 76, 0.5) 70%,
-      rgba(212, 118, 58, 0.7) 100%
-    ) border-box;
-  z-index: 2;
-  pointer-events: none;
-  animation: outline-shimmer 6s linear infinite;
-}
-
-@keyframes outline-shimmer {
-  0% { background-position: 0% 0%; }
-  100% { background-position: 200% 200%; }
-}
-
-.gw-photo-outline::before,
-.gw-photo-outline::after {
-  content: "";
-  position: absolute;
-  border-radius: 28px;
-  pointer-events: none;
-}
-
-/* Outer subtle glow outline */
-.gw-photo-outline::before {
-  inset: -4px;
-  border: 1px solid rgba(212, 118, 58, 0.12);
-}
-
-/* Inner accent edge */
-.gw-photo-outline::after {
-  inset: 4px;
-  border: 1px solid rgba(201, 168, 76, 0.08);
+  border-radius: 21px;
 }
 
 .gw-name {
