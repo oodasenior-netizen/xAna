@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, Lock, Unlock, Play } from "lucide-react";
+import { ChevronLeft, ChevronRight, Lock, Unlock, Play, Loader2 } from "lucide-react";
 import { unlockContent } from "@/app/actions";
 import { MediaPlayer } from "@/components/MediaPlayer";
 import type { StoredVaultItem } from "@/lib/store";
@@ -22,6 +22,13 @@ function priceLabel(cents?: number) {
   return `$${(cents / 100).toFixed(2)}`;
 }
 
+type PlayerState = {
+  url: string;
+  title: string;
+  type: "video" | "audio" | "bunny-embed";
+  posterGradient?: [string, string];
+} | null;
+
 type Props = {
   items: StoredVaultItem[];
   ownedContent: string[];
@@ -30,7 +37,8 @@ type Props = {
 export function VaultGrid({ items, ownedContent }: Props) {
   const [page, setPage] = useState(0);
   const [filter, setFilter] = useState<"all" | "ppv" | "exclusive">("all");
-  const [playerItem, setPlayerItem] = useState<StoredVaultItem | null>(null);
+  const [player, setPlayer] = useState<PlayerState>(null);
+  const [loadingId, setLoadingId] = useState<string | null>(null);
 
   const listedItems = items.filter((i) => i.status === "listed");
 
@@ -54,21 +62,49 @@ export function VaultGrid({ items, ownedContent }: Props) {
     return ownedContent.includes(item.id);
   }
 
+  /** Opens the media player — fetches a Bunny signed URL if needed */
+  async function openPlayer(item: StoredVaultItem) {
+    if (item.bunnyVideoId) {
+      setLoadingId(item.id);
+      try {
+        const res = await fetch(`/api/bunny/play/${item.bunnyVideoId}`);
+        if (!res.ok) throw new Error("Could not get playback URL");
+        const { embedUrl } = (await res.json()) as { embedUrl: string };
+        setPlayer({
+          url: embedUrl,
+          title: item.title,
+          type: "bunny-embed",
+          posterGradient: item.thumb,
+        });
+      } catch {
+        alert("Playback unavailable — please try again.");
+      } finally {
+        setLoadingId(null);
+      }
+    } else if (item.videoUrl) {
+      setPlayer({
+        url: item.videoUrl,
+        title: item.title,
+        type: item.type === "audio" ? "audio" : "video",
+        posterGradient: item.thumb,
+      });
+    }
+  }
+
   const canPlay = (item: StoredVaultItem) =>
     isUnlocked(item) &&
-    !!item.videoUrl &&
-    (item.type === "video" || item.type === "audio");
+    (!!item.bunnyVideoId || (!!item.videoUrl && (item.type === "video" || item.type === "audio")));
 
   return (
     <>
       {/* Media Player Modal */}
-      {playerItem && playerItem.videoUrl && (
+      {player && (
         <MediaPlayer
-          url={playerItem.videoUrl}
-          title={playerItem.title}
-          type={playerItem.type === "audio" ? "audio" : "video"}
-          posterGradient={playerItem.thumb}
-          onClose={() => setPlayerItem(null)}
+          url={player.url}
+          title={player.title}
+          type={player.type}
+          posterGradient={player.posterGradient}
+          onClose={() => setPlayer(null)}
         />
       )}
 
@@ -104,6 +140,14 @@ export function VaultGrid({ items, ownedContent }: Props) {
                 className="vault-tile-thumb"
                 style={{ background: `linear-gradient(145deg, ${item.thumb[0]}, ${item.thumb[1]})` }}
               >
+                {item.bunnyThumbnailUrl && (
+                  <img
+                    src={item.bunnyThumbnailUrl}
+                    alt={item.title}
+                    className="vault-bunny-thumb"
+                    loading="lazy"
+                  />
+                )}
                 {!unlocked && (
                   <span className="vault-lock-icon">
                     <Lock size={20} />
@@ -112,10 +156,15 @@ export function VaultGrid({ items, ownedContent }: Props) {
                 {playable && (
                   <button
                     className="vault-play-btn"
-                    onClick={() => setPlayerItem(item)}
+                    onClick={() => openPlayer(item)}
                     aria-label={`Play ${item.title}`}
+                    disabled={loadingId === item.id}
                   >
-                    <Play size={26} />
+                    {loadingId === item.id ? (
+                      <Loader2 size={22} className="vault-play-spinner" />
+                    ) : (
+                      <Play size={26} />
+                    )}
                   </button>
                 )}
                 <span
@@ -149,9 +198,14 @@ export function VaultGrid({ items, ownedContent }: Props) {
                   <button
                     className="primary-btn small-btn"
                     style={{ width: "100%", justifyContent: "center" }}
-                    onClick={() => setPlayerItem(item)}
+                    onClick={() => openPlayer(item)}
+                    disabled={loadingId === item.id}
                   >
-                    <Play size={13} /> Play Now
+                    {loadingId === item.id ? (
+                      <Loader2 size={13} className="vault-play-spinner" />
+                    ) : (
+                      <><Play size={13} /> Play Now</>
+                    )}
                   </button>
                 ) : null}
               </div>
