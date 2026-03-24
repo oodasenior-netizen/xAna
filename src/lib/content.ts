@@ -54,34 +54,16 @@ export const creatorProfile = {
   ],
 };
 
-/* ── 3-tier pricing (named after rooms) ───────────────── */
+/* ── Single-tier pricing ──────────────────────────────── */
 
 export const pricingPlans = [
   {
     id: "monthly" as const,
-    label: "El Jardín",
-    subtitle: "The Garden",
-    price: "$14",
+    label: "Exclusive Access",
+    subtitle: "Monthly Membership",
+    price: "$15.99",
     period: "/mo",
-    perks: ["El Jardín feed access", "The Scroll messages", "Basic Bodega browsing"],
-    highlight: false,
-  },
-  {
-    id: "quarterly" as const,
-    label: "El Salón",
-    subtitle: "The Salon",
-    price: "$35",
-    period: "/3 mo",
-    perks: ["Everything in Jardín", "Priority Terraza access", "1 bonus Bodega unlock"],
-    highlight: false,
-  },
-  {
-    id: "yearly" as const,
-    label: "La Alcoba",
-    subtitle: "The Inner Chamber",
-    price: "$129",
-    period: "/yr",
-    perks: ["Everything above", "3 bonus Bodega unlocks", "Founders key", "Loyalty 2× points"],
+    perks: ["Full content feed access", "Direct messaging", "Vault browsing", "Live session access"],
     highlight: true,
   },
 ];

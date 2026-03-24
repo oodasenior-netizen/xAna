@@ -1,6 +1,7 @@
 import { creatorProfile, pricingPlans } from "@/lib/content";
 import { creatorLogin, subscribeAndEnter } from "@/app/actions";
 import Image from "next/image";
+import { Flower2, Star, Lock, CheckCircle, Users, Sparkles, MessageCircle, Eye, Zap } from "lucide-react";
 
 type EntryPageProps = {
   searchParams: Promise<{ error?: string }>;
@@ -11,11 +12,10 @@ export default async function EntryPage({ searchParams }: EntryPageProps) {
 
   return (
     <main className="gateway">
-      {/* ── Hero: gated villa arrival ─────────────────────── */}
+      {/* ── Hero ─────────────────────────────────────────── */}
       <section className="gw-hero">
         <div className="gw-hero-overlay" />
         <div className="gw-hero-content">
-          {/* Creator portrait */}
           <div className="gw-creator-photo">
             <Image
               src="/annalesse.png"
@@ -29,10 +29,15 @@ export default async function EntryPage({ searchParams }: EntryPageProps) {
 
           <h1 className="gw-name">{creatorProfile.name}</h1>
           <p className="gw-tagline">{creatorProfile.tagline}</p>
+
+          <div className="gw-hero-stats">
+            <span className="gw-stat-pill"><Users size={14} /> {creatorProfile.memberCount} members</span>
+            <span className="gw-stat-pill"><Star size={14} /> Exclusive</span>
+          </div>
         </div>
       </section>
 
-      {/* ── Collage grid (replacing scattered absolutes) ──── */}
+      {/* ── Collage grid ─────────────────────────────────── */}
       <section className="gw-collage-section">
         <div className="gw-collage-grid">
           {creatorProfile.collageQuotes.map((q, i) => (
@@ -44,19 +49,19 @@ export default async function EntryPage({ searchParams }: EntryPageProps) {
         </div>
       </section>
 
-      {/* ── Social proof strip ────────────────────────────── */}
+      {/* ── Social proof ─────────────────────────────────── */}
       <div className="gw-proof">
-        <span className="gw-proof-pill">🌺 {creatorProfile.memberCount} guests inside</span>
+        <span className="gw-proof-pill"><Sparkles size={14} /> {creatorProfile.memberCount} members inside</span>
         <div className="gw-ticker">
-          <span>🔥 &quot;This is unlike anything else&quot;</span>
-          <span>🍷 &quot;Best subscription I own&quot;</span>
-          <span>🌙 &quot;Completely addictive content&quot;</span>
-          <span>✨ &quot;Worth every single cent&quot;</span>
-          <span>🌿 &quot;Feels like a private world&quot;</span>
+          <span><Zap size={12} /> &quot;This is unlike anything else&quot;</span>
+          <span><Star size={12} /> &quot;Best subscription I own&quot;</span>
+          <span><Eye size={12} /> &quot;Completely addictive content&quot;</span>
+          <span><CheckCircle size={12} /> &quot;Worth every single cent&quot;</span>
+          <span><MessageCircle size={12} /> &quot;Feels like a private world&quot;</span>
         </div>
       </div>
 
-      {/* ── Teaser blurred previews ───────────────────────── */}
+      {/* ── Teaser blurred previews ──────────────────────── */}
       <section className="gw-teasers">
         <div className="gw-teaser-card blur-card" />
         <div className="gw-teaser-card blur-card" />
@@ -64,52 +69,41 @@ export default async function EntryPage({ searchParams }: EntryPageProps) {
         <div className="gw-teaser-card blur-card" />
       </section>
 
-      {/* ── Locked preview reel ───────────────────────────── */}
-      <section className="gw-reel">
-        <div className="gw-reel-inner">
-          <div className="gw-reel-bar" />
-          <p>Preview reel — 5 s teaser</p>
-          <div className="gw-reel-blur" />
-        </div>
-      </section>
-
-      {/* ── What awaits inside ────────────────────────────── */}
+      {/* ── What awaits ──────────────────────────────────── */}
       <section className="gw-expect">
-        <h2>What Awaits Inside the Hacienda</h2>
+        <h2>What Awaits Inside</h2>
         <ul className="gw-expect-list">
           {creatorProfile.teaserLines.map((line) => (
-            <li key={line}>{line}</li>
+            <li key={line}><CheckCircle size={16} /> {line}</li>
           ))}
         </ul>
       </section>
 
-      {/* ── Pricing tiers (room names) ────────────────────── */}
+      {/* ── Pricing with floating animation ──────────────── */}
       <section className="gw-pricing" id="pricing">
-        <h2>Choose Your Room</h2>
+        <h2>Join Now</h2>
         <div className="gw-pricing-grid">
           {pricingPlans.map((plan) => (
             <article
               key={plan.id}
               className={`gw-price-card ${plan.highlight ? "gw-price-highlight" : ""}`}
             >
-              {plan.highlight && <span className="gw-best-badge">Best Value</span>}
+              <span className="gw-best-badge"><Star size={14} /> Premium</span>
               <h3>{plan.label}</h3>
-              <p style={{ fontSize: "0.78rem", color: "var(--ink-muted)", margin: "0.1rem 0 0.4rem" }}>
-                {plan.subtitle}
-              </p>
-              <p className="gw-price">
+              <p className="gw-price-subtitle">{plan.subtitle}</p>
+              <p className="gw-price gw-price-float">
                 {plan.price}
                 <span>{plan.period}</span>
               </p>
               <ul>
                 {plan.perks.map((perk) => (
-                  <li key={perk}>{perk}</li>
+                  <li key={perk}><CheckCircle size={14} /> {perk}</li>
                 ))}
               </ul>
               <form action={subscribeAndEnter}>
                 <input type="hidden" name="plan" value={plan.id} />
                 <button type="submit" className="gw-enter-btn">
-                  Enter
+                  <Lock size={16} /> Subscribe Now
                 </button>
               </form>
             </article>
@@ -117,20 +111,25 @@ export default async function EntryPage({ searchParams }: EntryPageProps) {
         </div>
       </section>
 
-      {/* ── Creator login (hidden lock) ───────────────────── */}
-      <section className="gw-creator-lock">
-        <details>
-          <summary>Creator Portal</summary>
-          {error && <p className="error-note">Creator login failed.</p>}
-          <form action={creatorLogin} className="creator-form">
-            <input name="email" type="email" placeholder="Creator email" required />
-            <input name="password" type="password" placeholder="Creator password" required />
-            <button type="submit" className="secondary-btn">
-              Unlock Portal
-            </button>
-          </form>
+      {/* ── Creator portal (bottom-right lotus button) ───── */}
+      <div className="gw-creator-fab">
+        <details className="gw-fab-details">
+          <summary className="gw-fab-button" title="Creator Portal">
+            <Flower2 size={24} />
+          </summary>
+          <div className="gw-fab-panel">
+            <h3><Lock size={16} /> Creator Portal</h3>
+            {error && <p className="error-note">Login failed. Try again.</p>}
+            <form action={creatorLogin} className="creator-form">
+              <input name="email" type="text" placeholder="Username" required autoComplete="username" />
+              <input name="password" type="password" placeholder="Password" required autoComplete="current-password" />
+              <button type="submit" className="primary-btn">
+                <Lock size={14} /> Unlock
+              </button>
+            </form>
+          </div>
         </details>
-      </section>
+      </div>
     </main>
   );
 }
