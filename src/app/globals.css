@@ -354,6 +354,7 @@ h1, h2, h3, .brand-font {
 
 .gw-hero {
   position: relative;
+  overflow: hidden;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -760,7 +761,8 @@ h1, h2, h3, .brand-font {
    WELCOME TRANSITION (Villa Gates Opening)
    ═══════════════════════════════════════════════════════════ */
 
-.welcome-shell {
+.welcome-shell,
+.welcome-overlay {
   min-height: 100vh;
   display: grid;
   place-items: center;
@@ -4087,6 +4089,39 @@ h1, h2, h3, .brand-font {
   color: var(--ink-muted);
   opacity: 0.7;
   font-weight: 400;
+}
+
+/* ── Particle Field (gold sprinkles + flowers) ────────── */
+
+.pf-field {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.pf-particle {
+  position: absolute;
+  color: var(--gold, #c9a84c);
+  opacity: 0;
+  animation: pf-drift linear infinite both;
+  will-change: transform, opacity;
+  user-select: none;
+  line-height: 1;
+}
+
+@keyframes pf-drift {
+  0%   { opacity: 0;           transform: translateY(0)     rotate(var(--pf-rot, 0deg))  scale(0.7); }
+  8%   { opacity: var(--pf-op, 0.15); }
+  50%  { transform: translateY(-28px) rotate(calc(var(--pf-rot, 0deg) + 90deg))  scale(1); }
+  88%  { opacity: var(--pf-op, 0.15); }
+  100% { opacity: 0;           transform: translateY(-56px) rotate(calc(var(--pf-rot, 0deg) + 180deg)) scale(0.8); }
+}
+
+/* Honour prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .pf-particle { animation: none; opacity: var(--pf-op, 0.1); }
 }
 
 /* ── xAna Cinema Player (Plyr.js) ─────────────────────── */

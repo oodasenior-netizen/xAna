@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { ParticleField } from "@/components/ParticleField";
 
 export default function SplashScreen() {
   const router = useRouter();
@@ -17,6 +18,7 @@ export default function SplashScreen() {
 
   return (
     <div className={`splash-shell ${phase}`}>
+      <ParticleField count={24} variant="mix" />
       {/* Ambient glow orbs */}
       <div className="splash-aura splash-aura-one" />
       <div className="splash-aura splash-aura-two" />
