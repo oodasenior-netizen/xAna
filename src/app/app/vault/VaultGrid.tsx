@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { ChevronLeft, ChevronRight, Lock, Unlock, Play, Loader2 } from "lucide-react";
 import { unlockContent } from "@/app/actions";
-import { MediaPlayer } from "@/components/MediaPlayer";
+import { PlyrPlayer } from "@/components/PlyrPlayer";
 import type { StoredVaultItem } from "@/lib/store";
 
 const PAGE_SIZE = 4;
@@ -25,7 +25,7 @@ function priceLabel(cents?: number) {
 type PlayerState = {
   url: string;
   title: string;
-  type: "video" | "audio" | "bunny-embed";
+  type: "video" | "audio";
   posterGradient?: [string, string];
 } | null;
 
@@ -62,18 +62,18 @@ export function VaultGrid({ items, ownedContent }: Props) {
     return ownedContent.includes(item.id);
   }
 
-  /** Opens the media player — fetches a Bunny signed URL if needed */
+  /** Opens the media player — fetches a short-lived signed CDN URL if needed */
   async function openPlayer(item: StoredVaultItem) {
-    if (item.bunnyVideoId) {
+    if (item.storageKey) {
       setLoadingId(item.id);
       try {
-        const res = await fetch(`/api/bunny/play/${item.bunnyVideoId}`);
+        const res = await fetch(`/api/vault/play?key=${encodeURIComponent(item.storageKey)}`);
         if (!res.ok) throw new Error("Could not get playback URL");
-        const { embedUrl } = (await res.json()) as { embedUrl: string };
+        const { url } = (await res.json()) as { url: string };
         setPlayer({
-          url: embedUrl,
+          url,
           title: item.title,
-          type: "bunny-embed",
+          type: item.type === "audio" ? "audio" : "video",
           posterGradient: item.thumb,
         });
       } catch {
@@ -93,17 +93,16 @@ export function VaultGrid({ items, ownedContent }: Props) {
 
   const canPlay = (item: StoredVaultItem) =>
     isUnlocked(item) &&
-    (!!item.bunnyVideoId || (!!item.videoUrl && (item.type === "video" || item.type === "audio")));
+    (!!item.storageKey || (!!item.videoUrl && (item.type === "video" || item.type === "audio")));
 
   return (
     <>
       {/* Media Player Modal */}
       {player && (
-        <MediaPlayer
+        <PlyrPlayer
           url={player.url}
           title={player.title}
           type={player.type}
-          posterGradient={player.posterGradient}
           onClose={() => setPlayer(null)}
         />
       )}
@@ -140,14 +139,6 @@ export function VaultGrid({ items, ownedContent }: Props) {
                 className="vault-tile-thumb"
                 style={{ background: `linear-gradient(145deg, ${item.thumb[0]}, ${item.thumb[1]})` }}
               >
-                {item.bunnyThumbnailUrl && (
-                  <img
-                    src={item.bunnyThumbnailUrl}
-                    alt={item.title}
-                    className="vault-bunny-thumb"
-                    loading="lazy"
-                  />
-                )}
                 {!unlocked && (
                   <span className="vault-lock-icon">
                     <Lock size={20} />

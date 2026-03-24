@@ -1,7 +1,6 @@
 ﻿"use client";
 
 import { useState, useRef } from "react";
-import { Upload } from "tus-js-client";
 import {
   creatorUpdateVaultItem,
   creatorDeleteVaultItem,
@@ -27,7 +26,7 @@ type WizardState = {
   status: MediaStatus;
   scheduledFor: string;
   videoUrl: string;
-  bunnyVideoId: string;
+  storageKey: string;
 };
 
 const EMPTY_WIZARD: WizardState = {
@@ -38,7 +37,7 @@ const EMPTY_WIZARD: WizardState = {
   status: "listed",
   scheduledFor: "",
   videoUrl: "",
-  bunnyVideoId: "",
+  storageKey: "",
 };
 
 type Props = {
@@ -62,67 +61,65 @@ const typeIcon = (t?: string) => {
   return "Bundle";
 };
 
-async function doTusUpload(
+/** XHR upload via /api/vault/upload (Edge Runtime) → Bunny Storage Zone */
+async function doVaultUpload(
   file: File,
-  title: string,
   onProgress: (pct: number) => void
 ): Promise<string> {
-  const credRes = await fetch("/api/bunny/sign-upload", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ title: title || file.name }),
-  });
+  return new Promise((resolve, reject) => {
+    const vaultItemId = `vault-${Date.now()}`;
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("vaultItemId", vaultItemId);
 
-  if (!credRes.ok) {
-    const body = await credRes.json().catch(() => ({ error: "Unknown error" }));
-    throw new Error((body as { error?: string }).error ?? "Failed to get upload credentials");
-  }
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", "/api/vault/upload");
 
-  const { videoId, signature, expiry, libraryId } = (await credRes.json()) as {
-    videoId: string;
-    signature: string;
-    expiry: number;
-    libraryId: string;
-  };
-
-  await new Promise<void>((resolve, reject) => {
-    const upload = new Upload(file, {
-      endpoint: "https://video.bunnycdn.com/tusupload",
-      retryDelays: [0, 3000, 5000, 10000, 20000],
-      headers: {
-        AuthorizationSignature: signature,
-        AuthorizationExpire: String(expiry),
-        VideoId: videoId,
-        LibraryId: String(libraryId),
-      },
-      metadata: {
-        filetype: file.type || "video/mp4",
-        title: title || file.name,
-      },
-      onError: reject,
-      onProgress: (uploaded, total) => {
-        if (total > 0) onProgress(Math.round((uploaded / total) * 100));
-      },
-      onSuccess: () => resolve(),
+    xhr.upload.addEventListener("progress", (e) => {
+      if (e.lengthComputable) {
+        onProgress(Math.round((e.loaded / e.total) * 100));
+      }
     });
-    upload.start();
-  });
 
-  return videoId;
+    xhr.addEventListener("load", () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          const json = JSON.parse(xhr.responseText) as { storageKey: string };
+          resolve(json.storageKey);
+        } catch {
+          reject(new Error("Invalid response from upload server"));
+        }
+      } else {
+        try {
+          const err = JSON.parse(xhr.responseText) as { error?: string };
+          reject(new Error(err.error ?? `Upload failed: ${xhr.status}`));
+        } catch {
+          reject(new Error(`Upload failed: ${xhr.status}`));
+        }
+      }
+    });
+
+    xhr.addEventListener("error", () => reject(new Error("Network error during upload")));
+    xhr.addEventListener("abort", () => reject(new Error("Upload cancelled")));
+
+    xhr.send(fd);
+  });
 }
+
+// -- UploadZone UI component -------------------------------------------------
 
 function UploadZone({
   phase,
   progress,
   error,
-  videoId,
+  storageKey,
   onFileSelected,
   onReset,
 }: {
   phase: UploadPhase;
   progress: number;
   error: string | null;
-  videoId: string;
+  storageKey: string;
   onFileSelected: (file: File) => void;
   onReset: () => void;
 }) {
@@ -138,8 +135,8 @@ function UploadZone({
     return (
       <div className="cr-upload-zone cr-upload-zone--done">
         <CheckCircle2 size={28} />
-        <p><strong>Upload complete</strong> — stored on Bunny Stream CDN</p>
-        <p className="cr-upload-vid-id">Video ID: {videoId}</p>
+        <p><strong>Upload complete</strong> — stored on Bunny Storage Zone</p>
+        <p className="cr-upload-vid-id">{storageKey.split("/").pop()}</p>
         <button type="button" className="cr-upload-replace-btn" onClick={onReset}>
           <RefreshCw size={13} /> Replace
         </button>
@@ -153,7 +150,7 @@ function UploadZone({
         <div className="cr-upload-progress-track">
           <div className="cr-upload-progress-bar" style={{ width: `${progress}%` }} />
         </div>
-        <p>Uploading to Bunny Stream CDN... {progress}%</p>
+        <p>Uploading to Bunny Storage... {progress}%</p>
       </div>
     );
   }
@@ -190,28 +187,28 @@ function UploadZone({
       />
       <UploadCloud size={32} />
       <p><strong>Drag and drop</strong> or click to upload video / audio / photo</p>
-      <p className="cr-upload-hint">Stored on Bunny Stream with token-authenticated secure playback</p>
+      <p className="cr-upload-hint">Stored on Bunny Storage Zone with token-authenticated secure playback</p>
     </div>
   );
 }
+
+// -- Main component ----------------------------------------------------------
 
 export default function VaultManager({ items, published, saved, error }: Props) {
   const [filter, setFilter] = useState<FilterTab>("all");
   const [addOpen, setAddOpen] = useState(false);
   const [pending, setPending] = useState(false);
-  const [addFile, setAddFile] = useState<File | null>(null);
   const [addPhase, setAddPhase] = useState<UploadPhase>("idle");
   const [addProgress, setAddProgress] = useState(0);
   const [addError, setAddError] = useState<string | null>(null);
-  const [addBunnyId, setAddBunnyId] = useState("");
+  const [addStorageKey, setAddStorageKey] = useState("");
   const [wizard, setWizard] = useState<WizardState>(EMPTY_WIZARD);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [wizardPending, setWizardPending] = useState(false);
-  const [editFile, setEditFile] = useState<File | null>(null);
   const [editPhase, setEditPhase] = useState<UploadPhase>("idle");
   const [editProgress, setEditProgress] = useState(0);
   const [editError, setEditError] = useState<string | null>(null);
-  const [editBunnyId, setEditBunnyId] = useState("");
+  const [editStorageKey, setEditStorageKey] = useState("");
 
   const filtered = filter === "all" ? items : items.filter((m) => m.status === filter);
   const counts: Record<FilterTab, number> = {
@@ -231,56 +228,49 @@ export default function VaultManager({ items, published, saved, error }: Props) 
       status: item.status,
       scheduledFor: item.scheduledFor ?? "",
       videoUrl: item.videoUrl ?? "",
-      bunnyVideoId: item.bunnyVideoId ?? "",
+      storageKey: item.storageKey ?? "",
     });
-    setEditFile(null);
-    setEditPhase(item.bunnyVideoId ? "done" : "idle");
-    setEditBunnyId(item.bunnyVideoId ?? "");
+    setEditPhase(item.storageKey ? "done" : "idle");
+    setEditStorageKey(item.storageKey ?? "");
     setEditError(null);
     setWizardOpen(true);
   }
 
   function closeAdd() {
     setAddOpen(false);
-    setAddFile(null);
     setAddPhase("idle");
     setAddProgress(0);
     setAddError(null);
-    setAddBunnyId("");
+    setAddStorageKey("");
+  }
+
+  async function handleAddFileSelected(file: File) {
+    setAddPhase("uploading");
+    setAddProgress(0);
+    setAddError(null);
+    try {
+      const storageKey = await doVaultUpload(file, setAddProgress);
+      setAddStorageKey(storageKey);
+      setAddPhase("done");
+    } catch (err) {
+      setAddPhase("error");
+      setAddError(err instanceof Error ? err.message : "Upload failed");
+    }
   }
 
   async function handleAddSubmit(fd: FormData) {
     setPending(true);
-    const title = String(fd.get("title") ?? "").trim();
-    if (addFile) {
-      setAddPhase("uploading");
-      setAddProgress(0);
-      setAddError(null);
-      try {
-        const vid = await doTusUpload(addFile, title, setAddProgress);
-        setAddBunnyId(vid);
-        setAddPhase("done");
-        fd.set("bunnyVideoId", vid);
-      } catch (err) {
-        setAddPhase("error");
-        setAddError(err instanceof Error ? err.message : "Upload failed");
-        setPending(false);
-        return;
-      }
-    } else if (addBunnyId) {
-      fd.set("bunnyVideoId", addBunnyId);
-    }
+    if (addStorageKey) fd.set("storageKey", addStorageKey);
     await creatorPublishVaultItem(fd);
   }
 
   async function handleEditFileSelected(file: File) {
-    setEditFile(file);
     setEditPhase("uploading");
     setEditProgress(0);
     setEditError(null);
     try {
-      const vid = await doTusUpload(file, wizard.title, setEditProgress);
-      setEditBunnyId(vid);
+      const storageKey = await doVaultUpload(file, setEditProgress);
+      setEditStorageKey(storageKey);
       setEditPhase("done");
     } catch (err) {
       setEditPhase("error");
@@ -290,7 +280,7 @@ export default function VaultManager({ items, published, saved, error }: Props) 
 
   async function handleEditSubmit(fd: FormData) {
     setWizardPending(true);
-    if (editBunnyId) fd.set("bunnyVideoId", editBunnyId);
+    if (editStorageKey) fd.set("storageKey", editStorageKey);
     await creatorUpdateVaultItem(fd);
   }
 
@@ -366,14 +356,19 @@ export default function VaultManager({ items, published, saved, error }: Props) 
             </div>
 
             <div className="cr-wizard-field">
-              <span>Upload Media to Bunny Stream</span>
+              <span>Upload Media to Edge Storage</span>
               <UploadZone
                 phase={addPhase}
                 progress={addProgress}
                 error={addError}
-                videoId={addBunnyId}
-                onFileSelected={(f) => setAddFile(f)}
-                onReset={() => { setAddFile(null); setAddPhase("idle"); setAddBunnyId(""); setAddError(null); }}
+                storageKey={addStorageKey}
+                onFileSelected={handleAddFileSelected}
+                onReset={() => {
+                  setAddPhase("idle");
+                  setAddProgress(0);
+                  setAddStorageKey("");
+                  setAddError(null);
+                }}
               />
             </div>
 
@@ -405,16 +400,15 @@ export default function VaultManager({ items, published, saved, error }: Props) 
         {filtered.map((m) => (
           <div key={m.id} className="cr-vault-card">
             <div className="cr-vault-thumb" style={{ background: `linear-gradient(135deg, ${m.thumb[0]}, ${m.thumb[1]})` }}>
-              {m.bunnyThumbnailUrl && <img src={m.bunnyThumbnailUrl} alt={m.title} className="cr-vault-bunny-img" loading="lazy" />}
               <span className="cr-vault-type">{typeIcon(m.type)}</span>
               <span className="cr-vault-status-badge">{statusIcon(m.status)}</span>
             </div>
             <div className="cr-vault-info">
               <h3 className="cr-vault-title">{m.title}</h3>
               <p className="cr-vault-desc">{m.description}</p>
-              {m.bunnyVideoId && (
+              {m.storageKey && (
                 <div className="cr-vault-bunny-badge">
-                  Bunny Stream <span className="cr-vault-bunny-id">{m.bunnyVideoId.slice(0, 8)}...</span>
+                  Storage Zone <span className="cr-vault-bunny-id">{m.storageKey.split("/").pop()}</span>
                 </div>
               )}
               <div className="cr-vault-meta">
@@ -427,12 +421,7 @@ export default function VaultManager({ items, published, saved, error }: Props) 
                 <span>{(m.purchases ?? 0)} sales</span>
               </div>
               <div className="cr-vault-price">{m.priceCents ? "$" + (m.priceCents / 100).toFixed(2) : "Free / Archived"}</div>
-              {m.bunnyVideoId && (
-                <a href={"https://iframe.mediadelivery.net/embed/623892/" + m.bunnyVideoId} target="_blank" rel="noreferrer" className="cr-feed-media-link" style={{ display: "inline-block", marginBottom: "0.5rem" }}>
-                  Preview on Bunny
-                </a>
-              )}
-              {!m.bunnyVideoId && m.videoUrl && (
+              {!m.storageKey && m.videoUrl && (
                 <a href={m.videoUrl} target="_blank" rel="noreferrer" className="cr-feed-media-link" style={{ display: "inline-block", marginBottom: "0.5rem" }}>
                   Preview media
                 </a>
@@ -488,14 +477,18 @@ export default function VaultManager({ items, published, saved, error }: Props) 
                 </label>
               )}
               <div className="cr-wizard-field">
-                <span>Replace Media File {wizard.bunnyVideoId ? "(current: Bunny " + wizard.bunnyVideoId.slice(0, 8) + "...)" : ""}</span>
+                <span>Replace Media File {wizard.storageKey ? `(current: ${wizard.storageKey.split("/").pop()})` : ""}</span>
                 <UploadZone
                   phase={editPhase}
                   progress={editProgress}
                   error={editError}
-                  videoId={editBunnyId}
+                  storageKey={editStorageKey}
                   onFileSelected={handleEditFileSelected}
-                  onReset={() => { setEditFile(null); setEditPhase(wizard.bunnyVideoId ? "done" : "idle"); setEditBunnyId(wizard.bunnyVideoId ?? ""); setEditError(null); }}
+                  onReset={() => {
+                    setEditPhase(wizard.storageKey ? "done" : "idle");
+                    setEditStorageKey(wizard.storageKey ?? "");
+                    setEditError(null);
+                  }}
                 />
               </div>
               <label className="cr-wizard-field">

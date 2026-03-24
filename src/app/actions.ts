@@ -12,7 +12,6 @@ import {
 import { feedItems, vaultItems } from "@/lib/content";
 import { readStore, writeStore } from "@/lib/store";
 import type { MoodTag, AccessMode, MediaStatus, MediaType } from "@/lib/store";
-import { getBunnyThumbnailUrl } from "@/lib/bunny";
 
 const THIRTY_DAYS = 60 * 60 * 24 * 30;
 
@@ -207,8 +206,7 @@ export async function creatorPublishVaultItem(formData: FormData) {
   const mediaType = String(formData.get("mediaType") ?? "video") as MediaType;
   const status = String(formData.get("status") ?? "listed") as MediaStatus;
   const scheduledFor = String(formData.get("scheduledFor") ?? "").trim() || undefined;
-  const bunnyVideoId = String(formData.get("bunnyVideoId") ?? "").trim() || undefined;
-  const bunnyThumbnailUrl = bunnyVideoId ? getBunnyThumbnailUrl(bunnyVideoId) : undefined;
+  const storageKey = String(formData.get("storageKey") ?? "").trim() || undefined;
 
   if (!title) redirect("/creator/vault?error=empty");
 
@@ -225,8 +223,7 @@ export async function creatorPublishVaultItem(formData: FormData) {
     comments: 0,
     videoUrl,
     type: mediaType,
-    bunnyVideoId,
-    bunnyThumbnailUrl,
+    storageKey,
     status,
     scheduledFor,
     views: 0,
@@ -254,7 +251,7 @@ export async function creatorUpdateVaultItem(formData: FormData) {
   const status = String(formData.get("status") ?? "listed") as MediaStatus;
   const scheduledFor = String(formData.get("scheduledFor") ?? "").trim() || undefined;
   const videoUrl = String(formData.get("videoUrl") ?? "").trim() || undefined;
-  const bunnyVideoId = String(formData.get("bunnyVideoId") ?? "").trim() || undefined;
+  const storageKey = String(formData.get("storageKey") ?? "").trim() || undefined;
 
   const store = readStore();
   store.vaultItems = store.vaultItems.map((item) =>
@@ -267,10 +264,7 @@ export async function creatorUpdateVaultItem(formData: FormData) {
           status,
           scheduledFor: status === "scheduled" ? scheduledFor : undefined,
           videoUrl: videoUrl !== undefined ? videoUrl || item.videoUrl : item.videoUrl,
-          bunnyVideoId: bunnyVideoId ?? item.bunnyVideoId,
-          bunnyThumbnailUrl: bunnyVideoId
-            ? getBunnyThumbnailUrl(bunnyVideoId)
-            : item.bunnyThumbnailUrl,
+          storageKey: storageKey ?? item.storageKey,
         }
       : item
   );

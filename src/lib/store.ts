@@ -41,9 +41,8 @@ export type StoredVaultItem = {
   comments: number;
   videoUrl?: string;
   type?: MediaType;
-  // Bunny Stream hosting
-  bunnyVideoId?: string;       // Bunny Stream GUID (UUID)
-  bunnyThumbnailUrl?: string;  // Pre-computed CDN thumbnail URL
+  // Bunny Storage Zone
+  storageKey?: string;         // Path in Bunny Storage Zone, e.g. "vault/item-id/video.mp4"
   // Creator-side metadata
   status: MediaStatus;
   fileSize?: string;
