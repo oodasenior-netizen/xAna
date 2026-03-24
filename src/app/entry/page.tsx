@@ -65,10 +65,10 @@ export default async function EntryPage({ searchParams }: EntryPageProps) {
       <section className="gw-highlights">
         <div className="gw-highlights-grid">
           {[
-            { src: "/pro5.jpg", label: "Exclusive Sessions" },
-            { src: "/pro6.jpg", label: "Behind the Veil" },
-            { src: "/pro7.jpg", label: "Intimate Moments" },
-            { src: "/pro8.jpg", label: "Goddess Gallery" },
+            { src: "/prox0.png", label: "Exclusive Sessions" },
+            { src: "/prox1.png", label: "Behind the Veil" },
+            { src: "/prox2.png", label: "Intimate Moments" },
+            { src: "/prox3.png", label: "Goddess Gallery" },
           ].map((panel, i) => (
             <div key={i} className="gw-hl-panel" style={{ animationDelay: `${i * 0.12}s` }}>
               <Image
