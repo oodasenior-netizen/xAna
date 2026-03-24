@@ -7,16 +7,26 @@ import {
   creatorPublishVaultItem,
 } from "@/app/actions";
 import type { StoredVaultItem, MediaStatus } from "@/lib/store";
+import { PlyrPlayer } from "@/components/PlyrPlayer";
 import {
   UploadCloud,
   CheckCircle2,
   AlertCircle,
   RefreshCw,
   X,
+  Play,
+  Loader2,
 } from "lucide-react";
 
 type FilterTab = "all" | MediaStatus;
 type UploadPhase = "idle" | "uploading" | "done" | "error";
+
+type PreviewState = {
+  url: string;
+  title: string;
+  type: "video" | "audio";
+  mediaType?: string;
+} | null;
 
 type WizardState = {
   id: string;
@@ -209,6 +219,8 @@ export default function VaultManager({ items, published, saved, error }: Props) 
   const [editProgress, setEditProgress] = useState(0);
   const [editError, setEditError] = useState<string | null>(null);
   const [editStorageKey, setEditStorageKey] = useState("");
+  const [preview, setPreview] = useState<PreviewState>(null);
+  const [previewLoading, setPreviewLoading] = useState<string | null>(null);
 
   const filtered = filter === "all" ? items : items.filter((m) => m.status === filter);
   const counts: Record<FilterTab, number> = {
@@ -284,8 +296,41 @@ export default function VaultManager({ items, published, saved, error }: Props) 
     await creatorUpdateVaultItem(fd);
   }
 
+  /** Creator preview — fetches a signed URL for storageKey items, or uses videoUrl directly */
+  async function openPreview(item: StoredVaultItem) {
+    const mediaType = item.type ?? "video";
+    const playerType: "video" | "audio" = mediaType === "audio" ? "audio" : "video";
+
+    if (item.storageKey) {
+      setPreviewLoading(item.id);
+      try {
+        const res = await fetch(`/api/vault/play?key=${encodeURIComponent(item.storageKey)}`);
+        if (!res.ok) throw new Error("Could not get playback URL");
+        const { url } = (await res.json()) as { url: string };
+        setPreview({ url, title: item.title, type: playerType, mediaType });
+      } catch {
+        alert("Preview unavailable — please try again.");
+      } finally {
+        setPreviewLoading(null);
+      }
+    } else if (item.videoUrl) {
+      setPreview({ url: item.videoUrl, title: item.title, type: playerType, mediaType });
+    }
+  }
+
   return (
     <div>
+      {/* Preview player overlay */}
+      {preview && (
+        <PlyrPlayer
+          url={preview.url}
+          title={preview.title}
+          type={preview.type}
+          mediaType={preview.mediaType}
+          onClose={() => setPreview(null)}
+        />
+      )}
+
       {published && <div className="cr-toast cr-toast-success">Item published to vault</div>}
       {saved && <div className="cr-toast cr-toast-success">Changes saved</div>}
       {error && <div className="cr-toast cr-toast-error">Title is required.</div>}
@@ -427,6 +472,21 @@ export default function VaultManager({ items, published, saved, error }: Props) 
                 </a>
               )}
               <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+                {(m.storageKey || (m.videoUrl && (m.type === "video" || m.type === "audio"))) && (
+                  <button
+                    className="cr-vault-preview-btn"
+                    onClick={() => openPreview(m)}
+                    disabled={previewLoading === m.id}
+                    title="Preview media"
+                  >
+                    {previewLoading === m.id ? (
+                      <Loader2 size={12} className="cr-spin" />
+                    ) : (
+                      <Play size={12} />
+                    )}
+                    Preview
+                  </button>
+                )}
                 <button className="cr-vault-edit-btn" onClick={() => openWizard(m)}>Quick Edit</button>
                 <form action={creatorDeleteVaultItem}>
                   <input type="hidden" name="itemId" value={m.id} />

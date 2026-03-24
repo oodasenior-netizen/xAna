@@ -26,6 +26,7 @@ type PlayerState = {
   url: string;
   title: string;
   type: "video" | "audio";
+  mediaType?: string;
   posterGradient?: [string, string];
 } | null;
 
@@ -74,6 +75,7 @@ export function VaultGrid({ items, ownedContent }: Props) {
           url,
           title: item.title,
           type: item.type === "audio" ? "audio" : "video",
+          mediaType: item.type,
           posterGradient: item.thumb,
         });
       } catch {
@@ -86,6 +88,7 @@ export function VaultGrid({ items, ownedContent }: Props) {
         url: item.videoUrl,
         title: item.title,
         type: item.type === "audio" ? "audio" : "video",
+        mediaType: item.type,
         posterGradient: item.thumb,
       });
     }
@@ -103,6 +106,7 @@ export function VaultGrid({ items, ownedContent }: Props) {
           url={player.url}
           title={player.title}
           type={player.type}
+          mediaType={player.mediaType}
           onClose={() => setPlayer(null)}
         />
       )}
