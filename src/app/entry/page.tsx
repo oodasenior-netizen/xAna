@@ -5,15 +5,6 @@ type EntryPageProps = {
   searchParams: Promise<{ error?: string }>;
 };
 
-const collagePositions: Record<string, string>[] = [
-  { top: "2%", left: "2%", transform: "rotate(-4deg)" },
-  { top: "5%", right: "3%", transform: "rotate(3deg)" },
-  { top: "38%", left: "0%", transform: "rotate(-2deg)" },
-  { top: "42%", right: "1%", transform: "rotate(5deg)" },
-  { bottom: "6%", left: "8%", transform: "rotate(-3deg)" },
-  { bottom: "2%", right: "5%", transform: "rotate(2deg)" },
-];
-
 export default async function EntryPage({ searchParams }: EntryPageProps) {
   const { error } = await searchParams;
 
@@ -30,26 +21,18 @@ export default async function EntryPage({ searchParams }: EntryPageProps) {
 
           <h1 className="gw-name">{creatorProfile.name}</h1>
           <p className="gw-tagline">{creatorProfile.tagline}</p>
+        </div>
+      </section>
 
-          {/* Scattered quote / bio collage */}
-          <div className="gw-collage">
-            {creatorProfile.collageQuotes.map((q, i) => {
-              const pos = collagePositions[i];
-              return (
-                <div
-                  key={i}
-                  className="gw-collage-item"
-                  style={{
-                    ...pos,
-                    position: "absolute",
-                  }}
-                >
-                  {q.text}
-                  <span className="collage-label">{q.label}</span>
-                </div>
-              );
-            })}
-          </div>
+      {/* ── Collage grid (replacing scattered absolutes) ──── */}
+      <section className="gw-collage-section">
+        <div className="gw-collage-grid">
+          {creatorProfile.collageQuotes.map((q, i) => (
+            <div key={i} className="gw-collage-card" style={{ animationDelay: `${i * 0.1}s` }}>
+              <p className="gw-collage-text">{q.text}</p>
+              <span className="gw-collage-label">{q.label}</span>
+            </div>
+          ))}
         </div>
       </section>
 

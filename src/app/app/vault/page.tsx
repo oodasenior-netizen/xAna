@@ -17,7 +17,7 @@ export default async function BodegaPage() {
         <span>Fan Favorites</span>
       </div>
 
-      <div className="vault-grid">
+      <div className="vault-grid two-col">
         {vaultItems.map((item) => {
           const unlocked = canAccessContent(session, item);
           return (

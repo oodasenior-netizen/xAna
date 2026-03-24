@@ -10,6 +10,12 @@ const tierLabels: Record<TierKey, string> = {
   alcoba: "🗝️ Alcoba",
 };
 
+const tierColors: Record<TierKey, string> = {
+  jardin: "tier-jardin",
+  salon: "tier-salon",
+  alcoba: "tier-alcoba",
+};
+
 const initialMessages = [
   { id: "msg-001", from: "luna_dreams", subject: "loved the new drop!", preview: "Hey Ari! The velvet night director cut was incredible, the alternate score...", receivedAt: "Today, 4:12 PM", read: false, tier: "alcoba" as TierKey, aiReplied: false },
   { id: "msg-002", from: "velvet_rose", subject: "request: more terrace content?", preview: "Hi! I was wondering if you could do more live sessions on the terrace...", receivedAt: "Today, 2:45 PM", read: false, tier: "salon" as TierKey, aiReplied: false },
@@ -29,6 +35,7 @@ export default function InboxPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [reply, setReply] = useState("");
   const [sent, setSent] = useState(false);
+  const [mobileView, setMobileView] = useState<"list" | "detail">("list");
 
   const filtered = filterTier === "all" ? messages : messages.filter((m) => m.tier === filterTier);
   const unread = messages.filter((m) => !m.read).length;
@@ -38,9 +45,15 @@ export default function InboxPage() {
     setSelectedId(id);
     setReply("");
     setSent(false);
+    setMobileView("detail");
     setMessages((prev) =>
       prev.map((m) => (m.id === id ? { ...m, read: true } : m))
     );
+  }
+
+  function goBackToList() {
+    setSelectedId(null);
+    setMobileView("list");
   }
 
   function sendReply() {
@@ -48,9 +61,8 @@ export default function InboxPage() {
     setSent(true);
     setReply("");
     setTimeout(() => {
-      setSelectedId(null);
       setSent(false);
-    }, 1000);
+    }, 2000);
   }
 
   return (
@@ -68,9 +80,9 @@ export default function InboxPage() {
           >
             <span className="cr-toggle-thumb" />
           </button>
-          <span className="cr-ai-status">{aiEnabled ? "Active" : "Off"}</span>
+          <span className={`cr-ai-status ${aiEnabled ? "active" : ""}`}>{aiEnabled ? "Active" : "Off"}</span>
         </div>
-        {aiEnabled && (
+        <div className={`cr-ai-settings-panel ${aiEnabled ? "open" : ""}`}>
           <div className="cr-ai-delay-row">
             <span>Reply after</span>
             <select
@@ -86,7 +98,7 @@ export default function InboxPage() {
             </select>
             <span className="cr-ai-hint">if no manual reply is sent</span>
           </div>
-        )}
+        </div>
       </div>
 
       {/* ── Filter tabs ───────────────────────────────────── */}
@@ -107,16 +119,19 @@ export default function InboxPage() {
 
       <div className="cr-inbox-layout">
         {/* ── Message list ──────────────────────────────────── */}
-        <div className="cr-inbox-list">
-          {filtered.map((msg) => (
+        <div className={`cr-inbox-list ${mobileView === "detail" ? "mobile-hidden" : ""}`}>
+          {filtered.map((msg, i) => (
             <button
               key={msg.id}
-              className={`cr-inbox-item ${!msg.read ? "unread" : ""} ${selectedId === msg.id ? "selected" : ""}`}
+              className={`cr-inbox-item ${!msg.read ? "unread" : ""} ${selectedId === msg.id ? "selected" : ""} ${tierColors[msg.tier]}`}
               onClick={() => openMessage(msg.id)}
+              style={{ animationDelay: `${i * 0.04}s` }}
             >
               <div className="cr-inbox-item-top">
                 <span className="cr-inbox-from">@{msg.from}</span>
-                <span className="cr-inbox-tier">{tierLabels[msg.tier]}</span>
+                <span className={`cr-inbox-tier-badge ${tierColors[msg.tier]}`}>
+                  {tierLabels[msg.tier]}
+                </span>
               </div>
               <div className="cr-inbox-subject">{msg.subject}</div>
               <div className="cr-inbox-preview">{msg.preview}</div>
@@ -129,14 +144,19 @@ export default function InboxPage() {
         </div>
 
         {/* ── Message detail ────────────────────────────────── */}
-        <div className="cr-inbox-detail">
+        <div className={`cr-inbox-detail ${mobileView === "list" ? "mobile-hidden" : ""} ${selected ? "has-message" : ""}`}>
           {selected ? (
-            <>
+            <div className="cr-inbox-detail-inner">
+              <button className="cr-inbox-back" onClick={goBackToList}>← Back</button>
               <div className="cr-inbox-detail-header">
                 <h3>{selected.subject}</h3>
-                <span className="cr-inbox-from">@{selected.from}</span>
-                <span className="cr-inbox-tier">{tierLabels[selected.tier]}</span>
-                <span className="timestamp">{selected.receivedAt}</span>
+                <div className="cr-inbox-detail-meta">
+                  <span className="cr-inbox-from">@{selected.from}</span>
+                  <span className={`cr-inbox-tier-badge ${tierColors[selected.tier]}`}>
+                    {tierLabels[selected.tier]}
+                  </span>
+                  <span className="timestamp">{selected.receivedAt}</span>
+                </div>
               </div>
               <div className="cr-inbox-detail-body">
                 <p>{selected.preview}</p>
@@ -156,11 +176,15 @@ export default function InboxPage() {
                   value={reply}
                   onChange={(e) => setReply(e.target.value)}
                 />
-                <button className="primary-btn" onClick={sendReply}>
+                <button
+                  className={`primary-btn ${sent ? "sent" : ""}`}
+                  onClick={sendReply}
+                  disabled={sent}
+                >
                   {sent ? "✓ Sent!" : "Send Reply"}
                 </button>
               </div>
-            </>
+            </div>
           ) : (
             <div className="cr-inbox-empty">
               <span>💌</span>
