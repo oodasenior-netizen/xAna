@@ -16,6 +16,7 @@ const CDN_HOST =
   process.env.BUNNY_STORAGE_CDN_HOST ?? `${ZONE}.b-cdn.net`;
 const TOKEN_KEY = process.env.BUNNY_TOKEN_KEY ?? "";
 const REGION = process.env.BUNNY_STORAGE_REGION ?? "";
+const CREATOR_PREFIX = (process.env.BUNNY_CREATOR_PREFIX ?? "creator-media").trim();
 
 const STORAGE_BASE = REGION
   ? `https://${REGION}.storage.bunnycdn.com`
@@ -125,5 +126,10 @@ export function buildStorageKey(vaultItemId: string, filename: string): string {
     .replace(/[^a-zA-Z0-9._-]/g, "_")
     .replace(/^_+/, "")
     .slice(0, 120);
-  return `vault/${vaultItemId}/${safe || "media"}`;
+
+  // Keep all creator uploads under one persistent folder prefix.
+  // Filename gets a timestamp/random suffix to avoid collisions.
+  const ext = safe.includes(".") ? "" : ".bin";
+  const stamp = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  return `vault/${CREATOR_PREFIX}/${stamp}-${safe || "media"}${ext}`;
 }

@@ -35,7 +35,7 @@ async function assertAccess(req: NextRequest, key: string): Promise<{ ok: true }
     return { ok: true };
   }
 
-  const store = readStore();
+  const store = await readStore();
   const vaultItem = store.vaultItems.find((v) => v.storageKey === key);
   if (vaultItem) {
     const canAccess = vaultItem.access === "subscription" || session.ownedContent.includes(vaultItem.id);

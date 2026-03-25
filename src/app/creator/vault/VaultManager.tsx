@@ -94,10 +94,8 @@ async function doVaultUpload(
   onProgress: (pct: number) => void
 ): Promise<string> {
   return new Promise((resolve, reject) => {
-    const vaultItemId = `vault-${Date.now()}`;
     const fd = new FormData();
     fd.append("file", file);
-    fd.append("vaultItemId", vaultItemId);
 
     const xhr = new XMLHttpRequest();
     xhr.open("POST", "/api/vault/upload");

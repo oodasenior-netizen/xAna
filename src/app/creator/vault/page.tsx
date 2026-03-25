@@ -7,7 +7,7 @@ type Props = { searchParams: Promise<{ published?: string; saved?: string; error
 export default async function CreatorVaultPage({ searchParams }: Props) {
   await requireCreator();
   const sp = await searchParams;
-  const { vaultItems } = readStore();
+  const { vaultItems } = await readStore();
 
   return (
     <section className="cr-page">

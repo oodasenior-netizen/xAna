@@ -7,7 +7,7 @@ import { Play, Lock } from "lucide-react";
 
 export default async function ElJardinPage() {
   const session = await requireSubscriber();
-  const { feedPosts } = readStore();
+  const { feedPosts } = await readStore();
 
   function canAccess(item: { access: string; id: string }) {
     if (session.role === "creator") return true;

@@ -4,7 +4,7 @@ import { VaultGrid } from "./VaultGrid";
 
 export default async function BodegaPage() {
   const session = await requireSubscriber();
-  const { vaultItems } = readStore();
+  const { vaultItems } = await readStore();
 
   return (
     <section className="vault-page">

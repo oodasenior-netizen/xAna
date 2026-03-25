@@ -9,7 +9,7 @@ type Props = { searchParams: Promise<{ published?: string; error?: string }> };
 export default async function CreatorFeedPage({ searchParams }: Props) {
   await requireCreator();
   const sp = await searchParams;
-  const { feedPosts } = readStore();
+  const { feedPosts } = await readStore();
 
   const statusBadge = (access: string) => {
     if (access === "subscription") return "🌿 Subs";

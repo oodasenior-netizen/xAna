@@ -157,7 +157,7 @@ export async function creatorPublishPost(formData: FormData) {
 
   if (!title || !description) redirect("/creator/feed?error=empty");
 
-  const store = readStore();
+  const store = await readStore();
   store.feedPosts.unshift({
     id: `feed-${Date.now()}`,
     title,
@@ -173,7 +173,7 @@ export async function creatorPublishPost(formData: FormData) {
     videoUrl,
     type: mediaType,
   });
-  writeStore(store);
+  await writeStore(store);
   revalidatePath("/app");
   revalidatePath("/creator/feed");
   redirect("/creator/feed?published=1");
@@ -184,9 +184,9 @@ export async function creatorDeletePost(formData: FormData) {
   if (!session || session.role !== "creator") redirect("/entry");
 
   const postId = String(formData.get("postId") ?? "");
-  const store = readStore();
+  const store = await readStore();
   store.feedPosts = store.feedPosts.filter((p) => p.id !== postId);
-  writeStore(store);
+  await writeStore(store);
   revalidatePath("/app");
   revalidatePath("/creator/feed");
   redirect("/creator/feed");
@@ -210,7 +210,7 @@ export async function creatorPublishVaultItem(formData: FormData) {
 
   if (!title) redirect("/creator/vault?error=empty");
 
-  const store = readStore();
+  const store = await readStore();
   store.vaultItems.unshift({
     id: `vault-${Date.now()}`,
     title,
@@ -234,7 +234,7 @@ export async function creatorPublishVaultItem(formData: FormData) {
       year: "numeric",
     }),
   });
-  writeStore(store);
+  await writeStore(store);
   revalidatePath("/app/vault");
   revalidatePath("/creator/vault");
   redirect("/creator/vault?published=1");
@@ -253,7 +253,7 @@ export async function creatorUpdateVaultItem(formData: FormData) {
   const videoUrl = String(formData.get("videoUrl") ?? "").trim() || undefined;
   const storageKey = String(formData.get("storageKey") ?? "").trim() || undefined;
 
-  const store = readStore();
+  const store = await readStore();
   store.vaultItems = store.vaultItems.map((item) =>
     item.id === id
       ? {
@@ -268,7 +268,7 @@ export async function creatorUpdateVaultItem(formData: FormData) {
         }
       : item
   );
-  writeStore(store);
+  await writeStore(store);
   revalidatePath("/app/vault");
   revalidatePath("/creator/vault");
   redirect("/creator/vault?saved=1");
@@ -279,9 +279,9 @@ export async function creatorDeleteVaultItem(formData: FormData) {
   if (!session || session.role !== "creator") redirect("/entry");
 
   const itemId = String(formData.get("itemId") ?? "");
-  const store = readStore();
+  const store = await readStore();
   store.vaultItems = store.vaultItems.filter((i) => i.id !== itemId);
-  writeStore(store);
+  await writeStore(store);
   revalidatePath("/app/vault");
   revalidatePath("/creator/vault");
   redirect("/creator/vault");

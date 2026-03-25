@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
 
   // Access control for subscribers
   if (session.role !== "creator") {
-    const store = readStore();
+    const store = await readStore();
 
     // Check vault items
     const vaultItem = store.vaultItems.find((v) => v.storageKey === key);

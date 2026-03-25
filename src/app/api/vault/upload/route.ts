@@ -8,7 +8,6 @@
  *
  * Request (multipart/form-data):
  *   file        — the media file
- *   vaultItemId — the ID used to namespace the storage path
  *
  * Response: { storageKey: string, size: number }
  */
@@ -32,16 +31,11 @@ export async function POST(req: NextRequest) {
   }
 
   const file = formData.get("file") as File | null;
-  const vaultItemId = String(formData.get("vaultItemId") ?? "").trim();
-
   if (!file) {
     return NextResponse.json({ error: "file is required" }, { status: 400 });
   }
-  if (!vaultItemId) {
-    return NextResponse.json({ error: "vaultItemId is required" }, { status: 400 });
-  }
 
-  const storageKey = buildStorageKey(vaultItemId, file.name);
+  const storageKey = buildStorageKey("creator", file.name);
 
   try {
     const buffer = await file.arrayBuffer();
