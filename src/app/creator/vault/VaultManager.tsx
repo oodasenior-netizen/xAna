@@ -16,10 +16,26 @@ import {
   X,
   Play,
   Loader2,
+  Plus,
+  Eye,
+  EyeOff,
+  Clock,
+  Archive,
+  Search,
+  Pencil,
+  Trash2,
+  Film,
+  Music,
+  Image,
+  Package,
+  CloudUpload,
+  LayoutList,
+  LayoutGrid,
 } from "lucide-react";
 
 type FilterTab = "all" | MediaStatus;
 type UploadPhase = "idle" | "uploading" | "done" | "error";
+type ViewMode = "list" | "grid";
 
 type WizardState = {
   id: string;
@@ -50,21 +66,29 @@ type Props = {
   error?: boolean;
 };
 
-const statusIcon = (s: MediaStatus) => {
-  if (s === "listed") return "Listed";
-  if (s === "unlisted") return "Unlisted";
-  if (s === "scheduled") return "Scheduled";
-  return "Stored";
+const statusMeta: Record<MediaStatus, { text: string; color: string }> = {
+  listed: { text: "Listed", color: "#22c55e" },
+  unlisted: { text: "Unlisted", color: "#f59e0b" },
+  scheduled: { text: "Scheduled", color: "#3b82f6" },
+  stored: { text: "Stored", color: "#6b7280" },
 };
 
-const typeIcon = (t?: string) => {
-  if (t === "video") return "Video";
-  if (t === "photo") return "Photo";
-  if (t === "audio") return "Audio";
-  return "Bundle";
+const StatusIcon = ({ status }: { status: MediaStatus }) => {
+  if (status === "listed") return <Eye size={13} />;
+  if (status === "unlisted") return <EyeOff size={13} />;
+  if (status === "scheduled") return <Clock size={13} />;
+  return <Archive size={13} />;
 };
 
-/** XHR upload via /api/vault/upload (Edge Runtime) → Bunny Storage Zone */
+const TypeIcon = ({ type }: { type?: string }) => {
+  if (type === "video") return <Film size={14} />;
+  if (type === "audio") return <Music size={14} />;
+  if (type === "photo") return <Image size={14} />;
+  return <Package size={14} />;
+};
+
+/* ── XHR upload to Bunny Storage Zone ──────────────────── */
+
 async function doVaultUpload(
   file: File,
   onProgress: (pct: number) => void
@@ -79,9 +103,7 @@ async function doVaultUpload(
     xhr.open("POST", "/api/vault/upload");
 
     xhr.upload.addEventListener("progress", (e) => {
-      if (e.lengthComputable) {
-        onProgress(Math.round((e.loaded / e.total) * 100));
-      }
+      if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100));
     });
 
     xhr.addEventListener("load", () => {
@@ -104,12 +126,11 @@ async function doVaultUpload(
 
     xhr.addEventListener("error", () => reject(new Error("Network error during upload")));
     xhr.addEventListener("abort", () => reject(new Error("Upload cancelled")));
-
     xhr.send(fd);
   });
 }
 
-// -- UploadZone UI component -------------------------------------------------
+/* ── UploadZone component ──────────────────────────────── */
 
 function UploadZone({
   phase,
@@ -189,16 +210,20 @@ function UploadZone({
         onChange={(e) => pickFile(e.target.files)}
       />
       <UploadCloud size={32} />
-      <p><strong>Drag and drop</strong> or click to upload video / audio / photo</p>
-      <p className="cr-upload-hint">Stored on Bunny Storage Zone with token-authenticated secure playback</p>
+      <p><strong>Drag and drop</strong> or click to upload</p>
+      <p className="cr-upload-hint">Stored on Bunny Storage Zone — token-authenticated playback</p>
     </div>
   );
 }
 
-// -- Main component ----------------------------------------------------------
+/* ═══════════════════════════════════════════════════════════
+   VaultManager — main component
+   ═══════════════════════════════════════════════════════════ */
 
 export default function VaultManager({ items, published, saved, error }: Props) {
   const [filter, setFilter] = useState<FilterTab>("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [addOpen, setAddOpen] = useState(false);
   const [pending, setPending] = useState(false);
   const [addPhase, setAddPhase] = useState<UploadPhase>("idle");
@@ -213,7 +238,7 @@ export default function VaultManager({ items, published, saved, error }: Props) 
   const [editError, setEditError] = useState<string | null>(null);
   const [editStorageKey, setEditStorageKey] = useState("");
 
-  // ── Creator preview player ──
+  /* ── Creator preview player ── */
   const [previewPlayer, setPreviewPlayer] = useState<{ url: string; title: string; type: "video" | "audio" } | null>(null);
   const [previewLoadingId, setPreviewLoadingId] = useState<string | null>(null);
 
@@ -235,7 +260,15 @@ export default function VaultManager({ items, published, saved, error }: Props) 
     }
   }
 
-  const filtered = filter === "all" ? items : items.filter((m) => m.status === filter);
+  /* Filter + search */
+  const byStatus = filter === "all" ? items : items.filter((m) => m.status === filter);
+  const filtered = searchQuery
+    ? byStatus.filter((m) =>
+        m.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        m.description.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : byStatus;
+
   const counts: Record<FilterTab, number> = {
     all: items.length,
     listed: items.filter((m) => m.status === "listed").length,
@@ -309,26 +342,61 @@ export default function VaultManager({ items, published, saved, error }: Props) 
     await creatorUpdateVaultItem(fd);
   }
 
+  const canPlay = (m: StoredVaultItem) => !!(m.storageKey || m.videoUrl);
+
   return (
-    <div>
+    <div className="vm-root">
       {/* Creator preview player */}
       {previewPlayer && (
-        <PlyrPlayer url={previewPlayer.url} title={previewPlayer.title} type={previewPlayer.type}
-          onClose={() => setPreviewPlayer(null)} />
+        <PlyrPlayer
+          url={previewPlayer.url}
+          title={previewPlayer.title}
+          type={previewPlayer.type}
+          onClose={() => setPreviewPlayer(null)}
+        />
       )}
 
       {published && <div className="cr-toast cr-toast-success">Item published to vault</div>}
       {saved && <div className="cr-toast cr-toast-success">Changes saved</div>}
       {error && <div className="cr-toast cr-toast-error">Title is required.</div>}
 
-      <div style={{ marginBottom: "1rem" }}>
-        <button className="primary-btn" onClick={() => setAddOpen((v) => !v)}>
-          {addOpen ? "Cancel" : "Add New Item"}
-        </button>
+      {/* ── Toolbar ──────────────────────────────────── */}
+      <div className="vm-toolbar">
+        <div className="vm-search-box">
+          <Search size={15} />
+          <input
+            type="text"
+            placeholder="Search media..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+        <div className="vm-toolbar-right">
+          <div className="vm-view-toggle">
+            <button
+              className={`vm-view-btn ${viewMode === "list" ? "active" : ""}`}
+              onClick={() => setViewMode("list")}
+              aria-label="List view"
+            >
+              <LayoutList size={16} />
+            </button>
+            <button
+              className={`vm-view-btn ${viewMode === "grid" ? "active" : ""}`}
+              onClick={() => setViewMode("grid")}
+              aria-label="Grid view"
+            >
+              <LayoutGrid size={16} />
+            </button>
+          </div>
+          <button className="primary-btn vm-add-btn" onClick={() => setAddOpen((v) => !v)}>
+            {addOpen ? <><X size={15} /> Cancel</> : <><Plus size={15} /> Add Media</>}
+          </button>
+        </div>
       </div>
 
+      {/* ── Add form ─────────────────────────────────── */}
       {addOpen && (
-        <div className="cr-compose" style={{ marginBottom: "1.5rem" }}>
+        <div className="vm-add-panel">
           <form action={async (fd) => { await handleAddSubmit(fd); }}>
             <div className="cr-wizard-row">
               <label className="cr-wizard-field half">
@@ -342,7 +410,7 @@ export default function VaultManager({ items, published, saved, error }: Props) 
             </div>
             <label className="cr-wizard-field">
               <span>Description</span>
-              <textarea name="description" rows={3} placeholder="Describe this item..." />
+              <textarea name="description" rows={2} placeholder="Describe this item..." />
             </label>
             <div className="cr-wizard-row">
               <label className="cr-wizard-field half">
@@ -378,7 +446,7 @@ export default function VaultManager({ items, published, saved, error }: Props) 
               <label className="cr-wizard-field half">
                 <span>Status</span>
                 <select name="status" defaultValue="listed">
-                  <option value="listed">Listed (Visible)</option>
+                  <option value="listed">Listed (Visible in Bodega)</option>
                   <option value="unlisted">Unlisted</option>
                   <option value="scheduled">Scheduled</option>
                   <option value="stored">Stored (Hidden)</option>
@@ -418,82 +486,211 @@ export default function VaultManager({ items, published, saved, error }: Props) 
         </div>
       )}
 
-      <div className="cr-tabs">
+      {/* ── Status tabs ──────────────────────────────── */}
+      <div className="vm-status-tabs">
         {(["all", "listed", "unlisted", "scheduled", "stored"] as FilterTab[]).map((t) => (
-          <button key={t} className={`cr-tab${filter === t ? " active" : ""}`} onClick={() => setFilter(t)}>
-            {t === "all" ? "All" : t.charAt(0).toUpperCase() + t.slice(1)} <span className="cr-tab-count">{counts[t]}</span>
+          <button
+            key={t}
+            className={`vm-status-tab ${filter === t ? "active" : ""}`}
+            onClick={() => setFilter(t)}
+            style={filter === t && t !== "all" ? { borderColor: statusMeta[t as MediaStatus]?.color } : undefined}
+          >
+            {t !== "all" && <StatusIcon status={t as MediaStatus} />}
+            {t === "all" ? "All" : statusMeta[t as MediaStatus].text}
+            <span className="vm-tab-count">{counts[t]}</span>
           </button>
         ))}
       </div>
 
-      <div className="cr-vault-grid">
-        {filtered.length === 0 && <p style={{ color: "var(--ink-muted)", padding: "1rem 0" }}>No items in this category.</p>}
-        {filtered.map((m) => (
-          <div key={m.id} className="cr-vault-card">
-            <div className="cr-vault-thumb" style={{ background: `linear-gradient(135deg, ${m.thumb[0]}, ${m.thumb[1]})` }}>
-              <span className="cr-vault-type">{typeIcon(m.type)}</span>
-              <span className="cr-vault-status-badge">{statusIcon(m.status)}</span>
-              {(m.storageKey || m.videoUrl) && (
-                <button
-                  className="cr-vault-play-overlay"
-                  onClick={() => openCreatorPreview(m)}
-                  disabled={previewLoadingId === m.id}
-                  aria-label={`Preview ${m.title}`}
+      {/* ── Content ──────────────────────────────────── */}
+      {filtered.length === 0 ? (
+        <div className="vm-empty">
+          <Archive size={40} />
+          <p>No media{filter !== "all" ? ` with status "${filter}"` : ""}{searchQuery ? ` matching "${searchQuery}"` : ""}.</p>
+        </div>
+      ) : viewMode === "list" ? (
+        /* ── LIST VIEW ─────────────────── */
+        <div className="vm-list">
+          <div className="vm-list-header">
+            <span className="vm-lh-media">Media</span>
+            <span className="vm-lh-type">Type</span>
+            <span className="vm-lh-status">Status</span>
+            <span className="vm-lh-price">Price</span>
+            <span className="vm-lh-stats">Stats</span>
+            <span className="vm-lh-actions">Actions</span>
+          </div>
+
+          {filtered.map((m) => (
+            <div key={m.id} className="vm-list-row">
+              {/* Thumb + title */}
+              <div className="vm-list-media">
+                <div
+                  className="vm-list-thumb"
+                  style={{ background: `linear-gradient(135deg, ${m.thumb[0]}, ${m.thumb[1]})` }}
                 >
-                  {previewLoadingId === m.id ? <Loader2 size={22} className="vault-play-spinner" /> : <Play size={26} />}
-                </button>
-              )}
-            </div>
-            <div className="cr-vault-info">
-              <h3 className="cr-vault-title">{m.title}</h3>
-              <p className="cr-vault-desc">{m.description}</p>
-              {m.storageKey && (
-                <div className="cr-vault-bunny-badge">
-                  Storage Zone <span className="cr-vault-bunny-id">{m.storageKey.split("/").pop()}</span>
+                  {canPlay(m) && (
+                    <button
+                      className="vm-thumb-play"
+                      onClick={() => openCreatorPreview(m)}
+                      disabled={previewLoadingId === m.id}
+                      aria-label={`Preview ${m.title}`}
+                    >
+                      {previewLoadingId === m.id ? <Loader2 size={16} className="vault-play-spinner" /> : <Play size={16} />}
+                    </button>
+                  )}
                 </div>
-              )}
-              <div className="cr-vault-meta">
-                {m.fileSize && <><span>{m.fileSize}</span><span> · </span></>}
-                <span>{m.uploadedAt ?? "—"}</span>
+                <div className="vm-list-media-info">
+                  <h3 className="vm-list-title">{m.title}</h3>
+                  <p className="vm-list-desc">{m.description}</p>
+                  {m.storageKey && (
+                    <span className="vm-storage-chip">
+                      <CloudUpload size={10} /> Bunny CDN
+                    </span>
+                  )}
+                  {m.scheduledFor && (
+                    <span className="vm-schedule-chip"><Clock size={10} /> {m.scheduledFor}</span>
+                  )}
+                </div>
               </div>
-              {m.scheduledFor && <div className="cr-vault-scheduled">Scheduled: {m.scheduledFor}</div>}
-              <div className="cr-vault-stats">
+
+              {/* Type */}
+              <div className="vm-list-type">
+                <TypeIcon type={m.type} />
+                <span>{m.type ?? "bundle"}</span>
+              </div>
+
+              {/* Status */}
+              <div className="vm-list-status">
+                <span
+                  className="vm-status-badge"
+                  style={{
+                    background: `${statusMeta[m.status].color}18`,
+                    color: statusMeta[m.status].color,
+                    borderColor: `${statusMeta[m.status].color}40`,
+                  }}
+                >
+                  <StatusIcon status={m.status} />
+                  {statusMeta[m.status].text}
+                </span>
+              </div>
+
+              {/* Price */}
+              <div className="vm-list-price">
+                {m.priceCents ? `$${(m.priceCents / 100).toFixed(2)}` : <span style={{ opacity: 0.5 }}>Free</span>}
+              </div>
+
+              {/* Stats */}
+              <div className="vm-list-stats">
                 <span>{(m.views ?? 0).toLocaleString()} views</span>
                 <span>{(m.purchases ?? 0)} sales</span>
               </div>
-              <div className="cr-vault-price">{m.priceCents ? "$" + (m.priceCents / 100).toFixed(2) : "Free / Archived"}</div>
-              {!m.storageKey && m.videoUrl && (
-                <a href={m.videoUrl} target="_blank" rel="noreferrer" className="cr-feed-media-link" style={{ display: "inline-block", marginBottom: "0.5rem" }}>
-                  Preview media
-                </a>
-              )}
-              <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-                {(m.storageKey || m.videoUrl) && (
+
+              {/* Actions */}
+              <div className="vm-list-actions">
+                {canPlay(m) && (
                   <button
-                    className="cr-vault-edit-btn"
+                    className="vm-action-btn vm-play-action"
                     onClick={() => openCreatorPreview(m)}
                     disabled={previewLoadingId === m.id}
+                    title="Preview"
                   >
-                    {previewLoadingId === m.id ? <><Loader2 size={12} className="vault-play-spinner" /> Loading...</> : <><Play size={12} /> Preview</>}
+                    {previewLoadingId === m.id ? <Loader2 size={14} className="vault-play-spinner" /> : <Play size={14} />}
                   </button>
                 )}
-                <button className="cr-vault-edit-btn" onClick={() => openWizard(m)}>Quick Edit</button>
-                <form action={creatorDeleteVaultItem}>
+                <button className="vm-action-btn vm-edit-action" onClick={() => openWizard(m)} title="Edit">
+                  <Pencil size={14} />
+                </button>
+                <form action={creatorDeleteVaultItem} style={{ display: "inline" }}>
                   <input type="hidden" name="itemId" value={m.id} />
-                  <button type="submit" className="cr-delete-btn">Delete</button>
+                  <button type="submit" className="vm-action-btn vm-delete-action" title="Delete">
+                    <Trash2 size={14} />
+                  </button>
                 </form>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : (
+        /* ── GRID VIEW ─────────────────── */
+        <div className="cr-vault-grid">
+          {filtered.map((m) => (
+            <div key={m.id} className="cr-vault-card">
+              <div
+                className="cr-vault-thumb"
+                style={{ background: `linear-gradient(135deg, ${m.thumb[0]}, ${m.thumb[1]})` }}
+              >
+                <span className="cr-vault-type"><TypeIcon type={m.type} /></span>
+                <span
+                  className="cr-vault-status-badge"
+                  style={{ background: `${statusMeta[m.status].color}30`, color: statusMeta[m.status].color }}
+                >
+                  {statusMeta[m.status].text}
+                </span>
+                {canPlay(m) && (
+                  <button
+                    className="cr-vault-play-overlay"
+                    onClick={() => openCreatorPreview(m)}
+                    disabled={previewLoadingId === m.id}
+                    aria-label={`Preview ${m.title}`}
+                  >
+                    {previewLoadingId === m.id ? <Loader2 size={22} className="vault-play-spinner" /> : <Play size={26} />}
+                  </button>
+                )}
+              </div>
+              <div className="cr-vault-info">
+                <h3 className="cr-vault-title">{m.title}</h3>
+                <p className="cr-vault-desc">{m.description}</p>
+                {m.storageKey && (
+                  <div className="cr-vault-bunny-badge">
+                    <CloudUpload size={11} /> Storage Zone
+                    <span className="cr-vault-bunny-id">{m.storageKey.split("/").pop()}</span>
+                  </div>
+                )}
+                {m.scheduledFor && (
+                  <div className="cr-vault-scheduled"><Clock size={11} /> {m.scheduledFor}</div>
+                )}
+                <div className="cr-vault-stats">
+                  <span>{(m.views ?? 0).toLocaleString()} views</span>
+                  <span>{(m.purchases ?? 0)} sales</span>
+                </div>
+                <div className="cr-vault-price">
+                  {m.priceCents ? "$" + (m.priceCents / 100).toFixed(2) : "Free"}
+                </div>
+                <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+                  {canPlay(m) && (
+                    <button
+                      className="cr-vault-edit-btn"
+                      onClick={() => openCreatorPreview(m)}
+                      disabled={previewLoadingId === m.id}
+                    >
+                      {previewLoadingId === m.id
+                        ? <><Loader2 size={12} className="vault-play-spinner" /> Loading…</>
+                        : <><Play size={12} /> Preview</>}
+                    </button>
+                  )}
+                  <button className="cr-vault-edit-btn" onClick={() => openWizard(m)}>
+                    <Pencil size={12} /> Edit
+                  </button>
+                  <form action={creatorDeleteVaultItem}>
+                    <input type="hidden" name="itemId" value={m.id} />
+                    <button type="submit" className="cr-delete-btn"><Trash2 size={12} /></button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
+      {/* ── Quick Edit Wizard Modal ──────────────────── */}
       {wizardOpen && (
         <div className="cr-wizard-overlay" onClick={() => setWizardOpen(false)}>
           <div className="cr-wizard" onClick={(e) => e.stopPropagation()}>
             <div className="cr-wizard-header">
-              <h2>Quick Edit</h2>
-              <button className="cr-wizard-close" onClick={() => setWizardOpen(false)} aria-label="Close"><X size={18} /></button>
+              <h2>Edit Media</h2>
+              <button className="cr-wizard-close" onClick={() => setWizardOpen(false)} aria-label="Close">
+                <X size={18} />
+              </button>
             </div>
             <form className="cr-wizard-body" action={async (fd) => { await handleEditSubmit(fd); }}>
               <input type="hidden" name="id" value={wizard.id} />
@@ -513,7 +710,7 @@ export default function VaultManager({ items, published, saved, error }: Props) 
                 <label className="cr-wizard-field half">
                   <span>Status</span>
                   <select name="status" value={wizard.status} onChange={(e) => setWizard({ ...wizard, status: e.target.value as MediaStatus })}>
-                    <option value="listed">Listed (Visible)</option>
+                    <option value="listed">Listed (Visible in Bodega)</option>
                     <option value="unlisted">Unlisted</option>
                     <option value="scheduled">Scheduled</option>
                     <option value="stored">Stored (Hidden)</option>
@@ -523,11 +720,20 @@ export default function VaultManager({ items, published, saved, error }: Props) 
               {wizard.status === "scheduled" && (
                 <label className="cr-wizard-field">
                   <span>Release Date</span>
-                  <input name="scheduledFor" type="text" placeholder="e.g. Apr 1, 2026 9:00 AM" value={wizard.scheduledFor} onChange={(e) => setWizard({ ...wizard, scheduledFor: e.target.value })} />
+                  <input
+                    name="scheduledFor"
+                    type="text"
+                    placeholder="e.g. Apr 1, 2026 9:00 AM"
+                    value={wizard.scheduledFor}
+                    onChange={(e) => setWizard({ ...wizard, scheduledFor: e.target.value })}
+                  />
                 </label>
               )}
               <div className="cr-wizard-field">
-                <span>Replace Media File {wizard.storageKey ? `(current: ${wizard.storageKey.split("/").pop()})` : ""}</span>
+                <span>
+                  Replace Media File{" "}
+                  {wizard.storageKey ? `(current: ${wizard.storageKey.split("/").pop()})` : ""}
+                </span>
                 <UploadZone
                   phase={editPhase}
                   progress={editProgress}
@@ -543,12 +749,24 @@ export default function VaultManager({ items, published, saved, error }: Props) 
               </div>
               <label className="cr-wizard-field">
                 <span>Or Direct URL <span className="cr-wizard-hint">(optional)</span></span>
-                <input name="videoUrl" type="url" placeholder="https://..." value={wizard.videoUrl} onChange={(e) => setWizard({ ...wizard, videoUrl: e.target.value })} />
+                <input
+                  name="videoUrl"
+                  type="url"
+                  placeholder="https://..."
+                  value={wizard.videoUrl}
+                  onChange={(e) => setWizard({ ...wizard, videoUrl: e.target.value })}
+                />
               </label>
               <div className="cr-wizard-footer">
-                <button type="button" className="secondary-btn small" onClick={() => setWizardOpen(false)}>Cancel</button>
+                <button type="button" className="secondary-btn small" onClick={() => setWizardOpen(false)}>
+                  Cancel
+                </button>
                 <button type="submit" className="primary-btn" disabled={wizardPending || editPhase === "uploading"}>
-                  {editPhase === "uploading" ? "Uploading " + editProgress + "%" : wizardPending ? "Saving..." : "Save Changes"}
+                  {editPhase === "uploading"
+                    ? "Uploading " + editProgress + "%"
+                    : wizardPending
+                    ? "Saving..."
+                    : "Save Changes"}
                 </button>
               </div>
             </form>
