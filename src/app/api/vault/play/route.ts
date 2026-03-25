@@ -13,7 +13,6 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { getSessionFromCookies } from "@/lib/auth";
-import { signStorageUrl } from "@/lib/bunny-storage";
 import { readStore } from "@/lib/store";
 
 export async function GET(req: NextRequest) {
@@ -55,7 +54,8 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const url = await signStorageUrl(key);
+    // Return same-origin stream URL so browser playback is stable and seek-friendly.
+    const url = `/api/vault/stream?key=${encodeURIComponent(key)}`;
     return NextResponse.json({ url });
   } catch (err) {
     const message = err instanceof Error ? err.message : "URL signing failed";

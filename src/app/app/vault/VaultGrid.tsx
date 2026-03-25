@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, Lock, Unlock, Play, Loader2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Lock, Unlock, Play } from "lucide-react";
 import { unlockContent } from "@/app/actions";
-import { PlyrPlayer } from "@/components/PlyrPlayer";
+import MediaPlayerModal from "@/components/media/MediaPlayerModal";
 import type { StoredVaultItem } from "@/lib/store";
 
 const PAGE_SIZE = 4;
@@ -22,13 +22,6 @@ function priceLabel(cents?: number) {
   return `$${(cents / 100).toFixed(2)}`;
 }
 
-type PlayerState = {
-  url: string;
-  title: string;
-  type: "video" | "audio";
-  posterGradient?: [string, string];
-} | null;
-
 type Props = {
   items: StoredVaultItem[];
   ownedContent: string[];
@@ -37,8 +30,7 @@ type Props = {
 export function VaultGrid({ items, ownedContent }: Props) {
   const [page, setPage] = useState(0);
   const [filter, setFilter] = useState<"all" | "ppv" | "exclusive">("all");
-  const [player, setPlayer] = useState<PlayerState>(null);
-  const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [activeItem, setActiveItem] = useState<StoredVaultItem | null>(null);
 
   const listedItems = items.filter((i) => i.status === "listed");
 
@@ -62,50 +54,17 @@ export function VaultGrid({ items, ownedContent }: Props) {
     return ownedContent.includes(item.id);
   }
 
-  /** Opens the media player — fetches a short-lived signed CDN URL if needed */
-  async function openPlayer(item: StoredVaultItem) {
-    if (item.storageKey) {
-      setLoadingId(item.id);
-      try {
-        const res = await fetch(`/api/vault/play?key=${encodeURIComponent(item.storageKey)}`);
-        if (!res.ok) throw new Error("Could not get playback URL");
-        const { url } = (await res.json()) as { url: string };
-        setPlayer({
-          url,
-          title: item.title,
-          type: item.type === "audio" ? "audio" : "video",
-          posterGradient: item.thumb,
-        });
-      } catch {
-        alert("Playback unavailable — please try again.");
-      } finally {
-        setLoadingId(null);
-      }
-    } else if (item.videoUrl) {
-      setPlayer({
-        url: item.videoUrl,
-        title: item.title,
-        type: item.type === "audio" ? "audio" : "video",
-        posterGradient: item.thumb,
-      });
-    }
+  function openPlayer(item: StoredVaultItem) {
+    setActiveItem(item);
   }
 
   const canPlay = (item: StoredVaultItem) =>
     isUnlocked(item) &&
-    (!!item.storageKey || (!!item.videoUrl && (item.type === "video" || item.type === "audio")));
+    (!!item.storageKey || (!!item.videoUrl && (item.type === "video" || item.type === "audio" || item.type === "photo")));
 
   return (
     <>
-      {/* Media Player Modal */}
-      {player && (
-        <PlyrPlayer
-          url={player.url}
-          title={player.title}
-          type={player.type}
-          onClose={() => setPlayer(null)}
-        />
-      )}
+      <MediaPlayerModal item={activeItem} onClose={() => setActiveItem(null)} />
 
       {/* Filter tabs */}
       <div className="vault-filter-tabs">
@@ -149,13 +108,8 @@ export function VaultGrid({ items, ownedContent }: Props) {
                     className="vault-play-btn"
                     onClick={() => openPlayer(item)}
                     aria-label={`Play ${item.title}`}
-                    disabled={loadingId === item.id}
                   >
-                    {loadingId === item.id ? (
-                      <Loader2 size={22} className="vault-play-spinner" />
-                    ) : (
-                      <Play size={26} />
-                    )}
+                    <Play size={26} />
                   </button>
                 )}
                 <span
@@ -190,13 +144,8 @@ export function VaultGrid({ items, ownedContent }: Props) {
                     className="primary-btn small-btn"
                     style={{ width: "100%", justifyContent: "center" }}
                     onClick={() => openPlayer(item)}
-                    disabled={loadingId === item.id}
                   >
-                    {loadingId === item.id ? (
-                      <Loader2 size={13} className="vault-play-spinner" />
-                    ) : (
-                      <><Play size={13} /> Play Now</>
-                    )}
+                    <><Play size={13} /> Play Now</>
                   </button>
                 ) : null}
               </div>

@@ -81,6 +81,28 @@ export async function signStorageUrl(
   return `https://${CDN_HOST}${urlPath}?token=${token}&expires=${expires}`;
 }
 
+/**
+ * Direct storage fetch fallback (server-side only).
+ * Useful when signed CDN playback URL fails for transient edge reasons.
+ */
+export async function fetchFromBunnyStorage(
+  storageKey: string,
+  options?: { method?: "GET" | "HEAD"; range?: string }
+): Promise<Response> {
+  const method = options?.method ?? "GET";
+  const url = `${STORAGE_BASE}/${ZONE}/${storageKey}`;
+  const headers: Record<string, string> = { AccessKey: STORAGE_KEY };
+  if (options?.range) {
+    headers.Range = options.range;
+  }
+
+  return fetch(url, {
+    method,
+    headers,
+    cache: "no-store",
+  });
+}
+
 // ─── Delete ───────────────────────────────────────────────────────────────────
 
 /** Remove a file from Bunny Storage (best-effort — does not throw on 404). */
