@@ -34,9 +34,13 @@ export default async function ElJardinPage() {
           <h2>{pinned.title}</h2>
           <p>{pinned.description}</p>
           {pinned.postedAt && <span className="timestamp">{pinned.postedAt}</span>}
-          {pinned.videoUrl && (
+          {(pinned.storageKey || pinned.videoUrl) && (
             <a
-              href={"/app/watch?url=" + encodeURIComponent(pinned.videoUrl) + "&title=" + encodeURIComponent(pinned.title)}
+              href={
+                pinned.storageKey
+                  ? "/app/watch?key=" + encodeURIComponent(pinned.storageKey) + "&title=" + encodeURIComponent(pinned.title) + "&type=" + (pinned.type ?? "video")
+                  : "/app/watch?url=" + encodeURIComponent(pinned.videoUrl!) + "&title=" + encodeURIComponent(pinned.title) + "&type=" + (pinned.type ?? "video")
+              }
               className="feed-play-link"
             >
               <Play size={14} /> Watch
@@ -77,9 +81,13 @@ export default async function ElJardinPage() {
             ) : (
               <div style={{ margin: "0 0.8rem", display: "flex", gap: "0.5rem", alignItems: "center" }}>
                 <div className="unlocked-chip">Access confirmed</div>
-                {unlocked && item.videoUrl && (
+                {unlocked && (item.storageKey || item.videoUrl) && (
                   <a
-                    href={"/app/watch?url=" + encodeURIComponent(item.videoUrl) + "&title=" + encodeURIComponent(item.title) + "&type=" + (item.type ?? "video")}
+                    href={
+                      item.storageKey
+                        ? "/app/watch?key=" + encodeURIComponent(item.storageKey) + "&title=" + encodeURIComponent(item.title) + "&type=" + (item.type ?? "video")
+                        : "/app/watch?url=" + encodeURIComponent(item.videoUrl!) + "&title=" + encodeURIComponent(item.title) + "&type=" + (item.type ?? "video")
+                    }
                     className="feed-play-link"
                   >
                     <Play size={13} /> Watch

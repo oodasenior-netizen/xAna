@@ -26,6 +26,7 @@ export type StoredPost = {
   postedAt: string;
   pinned?: boolean;
   videoUrl?: string;
+  storageKey?: string;
   type?: MediaType;
 };
 
@@ -73,6 +74,8 @@ function defaultStore(): AppStore {
       comments: i.comments ?? 0,
       postedAt: i.postedAt ?? "Recently",
       pinned: i.pinned,
+      videoUrl: i.videoUrl,
+      type: i.type as MediaType | undefined,
     })),
     vaultItems: vaultItems.map((i) => ({
       id: i.id,
@@ -84,6 +87,8 @@ function defaultStore(): AppStore {
       thumb: i.thumb,
       likes: i.likes ?? 0,
       comments: i.comments ?? 0,
+      videoUrl: i.videoUrl,
+      type: i.type as MediaType | undefined,
       status: "listed" as MediaStatus,
       views: 0,
       purchases: 0,

@@ -24,24 +24,34 @@ export async function GET(req: NextRequest) {
 
   const key = req.nextUrl.searchParams.get("key") ?? "";
 
-  // Strict key validation — must be "vault/{id}/{filename}", no path traversal
-  if (!key || !key.startsWith("vault/") || key.includes("..") || key.includes("//")) {
+  // Strict key validation — must be "vault/{id}/{filename}" or "feed/{id}/{filename}", no path traversal
+  if (!key || (!key.startsWith("vault/") && !key.startsWith("feed/")) || key.includes("..") || key.includes("//")) {
     return NextResponse.json({ error: "Invalid storage key" }, { status: 400 });
   }
 
   // Access control for subscribers
   if (session.role !== "creator") {
     const store = readStore();
-    const item = store.vaultItems.find((v) => v.storageKey === key);
 
-    if (item) {
+    // Check vault items
+    const vaultItem = store.vaultItems.find((v) => v.storageKey === key);
+    if (vaultItem) {
       const canAccess =
-        item.access === "subscription" || session.ownedContent.includes(item.id);
+        vaultItem.access === "subscription" || session.ownedContent.includes(vaultItem.id);
       if (!canAccess) {
         return NextResponse.json({ error: "Access denied" }, { status: 403 });
       }
     }
-    // Unknown key (deleted item) — allow; signed URL expires in 2h either way
+
+    // Check feed posts
+    const feedPost = store.feedPosts.find((p) => p.storageKey === key);
+    if (feedPost) {
+      const canAccess =
+        feedPost.access === "subscription" || session.ownedContent.includes(feedPost.id);
+      if (!canAccess) {
+        return NextResponse.json({ error: "Access denied" }, { status: 403 });
+      }
+    }
   }
 
   try {

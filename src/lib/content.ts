@@ -19,6 +19,10 @@ export type ContentItem = {
   likes?: number;
   comments?: number;
   postedAt?: string;
+  /** Direct video/audio URL (external or CDN) */
+  videoUrl?: string;
+  /** Media type hint */
+  type?: "video" | "audio" | "photo" | "bundle" | "text";
 };
 
 export type ScrollThread = {
@@ -92,6 +96,7 @@ export const feedItems: ContentItem[] = [
     likes: 218,
     comments: 15,
     postedAt: "Yesterday",
+    type: "video",
   },
   {
     id: "feed-velvet-night",
@@ -104,6 +109,7 @@ export const feedItems: ContentItem[] = [
     likes: 189,
     comments: 42,
     postedAt: "2 days ago",
+    type: "video",
   },
   {
     id: "feed-blossom-reel",
@@ -115,6 +121,7 @@ export const feedItems: ContentItem[] = [
     likes: 456,
     comments: 37,
     postedAt: "3 days ago",
+    type: "video",
   },
   {
     id: "feed-personal-letter",
@@ -142,6 +149,7 @@ export const vaultItems: ContentItem[] = [
     thumb: ["#5c2e1a", "#1a0f0a"],
     likes: 189,
     comments: 42,
+    type: "video",
   },
   {
     id: "vault-hacienda-prints",
@@ -164,6 +172,7 @@ export const vaultItems: ContentItem[] = [
     thumb: ["#704214", "#2e1e15"],
     likes: 267,
     comments: 33,
+    type: "video",
   },
   {
     id: "vault-moonlit-garden",
@@ -175,6 +184,7 @@ export const vaultItems: ContentItem[] = [
     thumb: ["#3d2a1e", "#1a0f0a"],
     likes: 198,
     comments: 24,
+    type: "video",
   },
   {
     id: "vault-terraza-replay",
@@ -186,6 +196,7 @@ export const vaultItems: ContentItem[] = [
     thumb: ["#6b3410", "#1a0d01"],
     likes: 312,
     comments: 56,
+    type: "video",
   },
   {
     id: "vault-blossom-collection",
