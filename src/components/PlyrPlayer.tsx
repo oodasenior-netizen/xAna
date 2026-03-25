@@ -17,6 +17,20 @@ import { useEffect, useRef, useCallback, useState } from "react";
 import { X, Minimize2, Repeat } from "lucide-react";
 import type Plyr from "plyr";
 
+/** Safely call play() and swallow AbortError (caused by rapid play/pause race). */
+async function safePlay(el: HTMLMediaElement | null) {
+  if (!el) return;
+  try {
+    await el.play();
+  } catch (e) {
+    if (e instanceof DOMException && e.name === "AbortError") {
+      // play() was interrupted by pause() — safe to ignore
+    } else {
+      console.error("Playback error:", e);
+    }
+  }
+}
+
 type Props = {
   url: string;
   title: string;
@@ -39,7 +53,11 @@ export function PlyrPlayer({ url, title, type = "video", onClose }: Props) {
   }, []);
 
   const close = useCallback(() => {
-    playerRef.current?.pause();
+    // Only pause if media is actually playing — avoids AbortError
+    const el = mediaRef.current;
+    if (el && !el.paused) {
+      el.pause();
+    }
     setMode("closing");
     setTimeout(() => onClose(), 320);
   }, [onClose]);
@@ -98,10 +116,13 @@ export function PlyrPlayer({ url, title, type = "video", onClose }: Props) {
         invertTime: false,
       });
       playerRef.current = player;
-      player.on("ready", () => { void player.play(); });
+      player.on("ready", () => { safePlay(mediaRef.current); });
     });
 
     return () => {
+      // Pause before destroy to prevent AbortError during teardown
+      const el = mediaRef.current;
+      if (el && !el.paused) el.pause();
       playerRef.current?.destroy();
       playerRef.current = null;
     };
